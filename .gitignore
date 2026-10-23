@@ -1,0 +1,31 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# --- Local databases & uploaded files (never commit) ---
+.data/
+*.sqlite
+*.sqlite3
+*.db
+
+# --- Secrets & environment (names only in .env.example) ---
+.env
+.env.*
+!.env.example
+
+# --- Node / frontend (future phases) ---
+node_modules/
+dist/
+.vite/
+
+# --- Editors / OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

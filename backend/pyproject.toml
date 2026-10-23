@@ -1,0 +1,41 @@
+[project]
+name = "brandsentry-backend"
+version = "0.1.0"
+description = "BrandSentry FastAPI backend (Phase 1A: local foundation)"
+requires-python = ">=3.11"
+
+# Runtime dependencies are managed in requirements.txt (Railway parity);
+# dev/test dependencies in requirements-dev.txt.
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # import sorting
+    "B",   # bugbear (likely bugs/design problems)
+    "UP",  # pyupgrade (modern syntax)
+    "S",   # bandit-style security checks
+    "SIM", # simplify
+]
+ignore = [
+    "S101", # assert statements are fine in tests
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+    "S101", # asserts used pervasively in tests
+    "S106", # hardcoded passwords (none present; defensive)
+]
+
+[tool.ruff.format]
+quote-style = "double"
