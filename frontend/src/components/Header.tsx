@@ -1,71 +1,111 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ShieldCheck, Menu, X } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ShieldCheck, Menu, X, Search } from 'lucide-react';
 import { Navigation } from './Navigation';
 import { StatusBadge } from './StatusBadge';
+import { ThemeToggle } from './ThemeToggle';
 import { ConnectionState } from '../types/api';
 
 interface HeaderProps {
   connectionState: ConnectionState;
+  onOpenMobileSidebar?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({ connectionState }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+  const menuButton = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMobileMenuOpen(false);
+        menuButton.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', closeOnEscape);
+    return () => document.removeEventListener('keydown', closeOnEscape);
+  }, [mobileMenuOpen]);
 
   const toggleMobileMenu = () => setMobileMenuOpen((prev) => !prev);
   const closeMobileMenu = () => setMobileMenuOpen(false);
 
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/vault?search=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200">
+    <header className="workspace-header sticky top-0 z-30 border-b border-slate-200/80 dark:border-slate-800/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Brand Wordmark & Logo */}
-          <div className="flex items-center gap-6">
-            <Link
-              to="/"
-              className="flex items-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 rounded-lg p-1"
-              aria-label="BrandSentry home"
-            >
-              <div className="w-9 h-9 rounded-lg bg-slate-900 text-brand-400 flex items-center justify-center shadow-sm">
-                <ShieldCheck className="w-5 h-5 text-emerald-400" aria-hidden="true" />
-              </div>
-              <div>
-                <span className="text-lg font-bold tracking-tight text-slate-900">
-                  Brand<span className="text-emerald-600">Sentry</span>
-                </span>
-                <span className="hidden sm:inline-block ml-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
-                  Foundation
-                </span>
-              </div>
-            </Link>
-
-            {/* Desktop Navigation */}
-            <div className="hidden md:block">
-              <Navigation orientation="horizontal" />
-            </div>
-          </div>
-
-          {/* Right Header: Status Badge & Mobile Hamburger */}
+        <div className="flex items-center justify-between h-16 gap-4">
+          {/* Left: Mobile hamburger & Brand */}
           <div className="flex items-center gap-3">
-            <div className="hidden sm:block">
-              <StatusBadge state={connectionState} />
-            </div>
-
-            {/* Mobile Hamburger Toggle */}
             <button
               type="button"
+              ref={menuButton}
               onClick={toggleMobileMenu}
               aria-label="Toggle navigation menu"
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-menu"
-              className="md:hidden inline-flex items-center justify-center p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900"
+              className="md:hidden inline-flex items-center justify-center p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
             >
               {mobileMenuOpen ? (
-                <X className="w-6 h-6" aria-hidden="true" />
+                <X className="w-5 h-5" aria-hidden="true" />
               ) : (
-                <Menu className="w-6 h-6" aria-hidden="true" />
+                <Menu className="w-5 h-5" aria-hidden="true" />
               )}
             </button>
+
+            <Link
+              to="/"
+              className="flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded-xl p-1"
+              aria-label="BrandSentry home"
+            >
+              <div className="hidden sm:flex w-8 h-8 rounded-lg bg-brand-600 text-white items-center justify-center shadow-sm">
+                <ShieldCheck className="w-5 h-5 text-white" aria-hidden="true" />
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="brand-wordmark font-display tracking-tight text-slate-900 dark:text-white">
+                  Brand<span className="text-brand-600 dark:text-brand-400">Sentry</span>
+                </span>
+                <span className="hidden lg:inline-block text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+                  Governance
+                </span>
+              </div>
+            </Link>
+          </div>
+
+          {/* Center: Inset Search Bar (matches neumorphic reference) */}
+          <div className="hidden sm:flex flex-1 max-w-md mx-2">
+            <form onSubmit={handleSearchSubmit} className="w-full relative">
+              <label htmlFor="global-search" className="sr-only">
+                Search knowledge, rules or submissions
+              </label>
+              <div className="relative flex items-center">
+                <Search className="w-4 h-4 text-slate-500 absolute left-3 pointer-events-none" aria-hidden="true" />
+                <input
+                  id="global-search"
+                  type="search"
+                  placeholder="Search guidelines, rules, or claims..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-4 py-1.5 text-xs rounded-xl neu-input bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-brand-500"
+                />
+              </div>
+            </form>
+          </div>
+
+          {/* Right: Theme Toggle & Backend Status */}
+          <div className="flex items-center gap-2.5">
+            <ThemeToggle />
+            <div className="hidden xs:block">
+              <StatusBadge state={connectionState} />
+            </div>
           </div>
         </div>
       </div>
@@ -75,14 +115,14 @@ export const Header: React.FC<HeaderProps> = ({ connectionState }) => {
         <div
           id="mobile-menu"
           data-testid="mobile-menu"
-          className="md:hidden border-b border-slate-200 bg-white px-4 pt-3 pb-5 space-y-4 shadow-lg animate-in slide-in-from-top-2"
+          className="md:hidden border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-neu-surface-dark px-4 pt-3 pb-5 space-y-4 shadow-lg animate-in slide-in-from-top-2"
         >
-          <div className="sm:hidden pb-2 border-b border-slate-100 flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500">System Status:</span>
+          <div className="sm:hidden pb-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">System Status:</span>
             <StatusBadge state={connectionState} />
           </div>
           <div>
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-3 mb-2">
+            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-3 mb-2">
               Navigation
             </div>
             <Navigation orientation="vertical" onItemClick={closeMobileMenu} />

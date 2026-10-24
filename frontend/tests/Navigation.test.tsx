@@ -4,30 +4,37 @@ import { describe, it, expect, vi } from 'vitest';
 import { Navigation } from '../src/components/Navigation';
 import { Header } from '../src/components/Header';
 import { ConnectionState } from '../src/types/api';
+import { ThemeProvider } from '../src/context/ThemeProvider';
 
 describe('Navigation and Header Components', () => {
-  it('renders all required navigation destinations with upcoming labels', () => {
+  it('renders all required navigation destinations with active and upcoming labels', () => {
     render(
       <MemoryRouter initialEntries={['/']}>
-        <Navigation orientation="horizontal" />
+        <Navigation orientation="vertical" />
       </MemoryRouter>
     );
 
-    // Active item
+    // Active Phase 3 routes
     const overviewLink = screen.getByRole('link', { name: /Overview/i });
     expect(overviewLink).toBeInTheDocument();
     expect(overviewLink).toHaveAttribute('href', '/');
 
-    // Upcoming / disabled items
-    const vaultItem = screen.getByText('Brand Vault').closest('[role="link"]');
-    expect(vaultItem).toHaveAttribute('aria-disabled', 'true');
-    expect(screen.getByText('Phase 3')).toBeInTheDocument();
+    const vaultLink = screen.getByRole('link', { name: /Brand Vault/i });
+    expect(vaultLink).toBeInTheDocument();
+    expect(vaultLink).toHaveAttribute('href', '/vault');
 
-    const reviewItem = screen.getByText('Content Review').closest('[role="link"]');
-    expect(reviewItem).toHaveAttribute('aria-disabled', 'true');
+    const studioLink = screen.getByRole('link', { name: /Content Studio/i });
+    expect(studioLink).toBeInTheDocument();
+    expect(studioLink).toHaveAttribute('href', '/studio');
 
+    const runsLink = screen.getByRole('link', { name: /Validation Runs/i });
+    expect(runsLink).toBeInTheDocument();
+    expect(runsLink).toHaveAttribute('href', '/runs');
+
+    // Upcoming / disabled items (Phase 5)
     const approvalsItem = screen.getByText('Approvals').closest('[role="link"]');
     expect(approvalsItem).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getAllByText('Phase 5').length).toBeGreaterThanOrEqual(1);
 
     const insightsItem = screen.getByText('Insights').closest('[role="link"]');
     expect(insightsItem).toHaveAttribute('aria-disabled', 'true');
@@ -37,9 +44,11 @@ describe('Navigation and Header Components', () => {
     const dummyState: ConnectionState = { status: 'loading' };
 
     render(
-      <MemoryRouter initialEntries={['/']}>
-        <Header connectionState={dummyState} />
-      </MemoryRouter>
+      <ThemeProvider>
+        <MemoryRouter initialEntries={['/']}>
+          <Header connectionState={dummyState} />
+        </MemoryRouter>
+      </ThemeProvider>
     );
 
     // Mobile menu toggle exists

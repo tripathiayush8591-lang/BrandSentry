@@ -32,8 +32,11 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
+# Migration trigger DDL interpolates only the module-level FTS table constant.
+"migrations/*" = ["S608"]
 "tests/*" = [
     "S101", # asserts used pervasively in tests
+    "S105", # fake Firebase tokens are not credentials
     "S106", # hardcoded passwords (none present; defensive)
 ]
 

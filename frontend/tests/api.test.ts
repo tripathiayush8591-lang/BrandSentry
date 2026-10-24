@@ -29,8 +29,10 @@ describe('API Client — fetchBackendStatus', () => {
   };
 
   it('resolves the API base URL from default or env', () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://127.0.0.1:8000');
     const url = getApiBaseUrl();
     expect(url).toMatch(/^http:\/\/(127\.0\.0\.1|localhost):8000/);
+    vi.unstubAllEnvs();
   });
 
   it('handles successful API connection and parses response contract', async () => {

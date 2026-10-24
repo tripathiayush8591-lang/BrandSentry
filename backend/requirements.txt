@@ -4,3 +4,10 @@ uvicorn[standard]>=0.30,<1.0
 pydantic>=2.8,<3.0
 pydantic-settings>=2.4,<3.0
 SQLAlchemy>=2.0.30,<2.1
+alembic>=1.13,<2.0
+firebase-admin>=6.5,<7.0
+# Phase 3A knowledge vault: text-based PDF extraction + multipart uploads.
+pymupdf>=1.24,<1.27
+python-multipart>=0.0.9,<0.1
+# Phase 3B Gemini provider adapter (bounded-timeout REST calls).
+httpx>=0.27,<1.0

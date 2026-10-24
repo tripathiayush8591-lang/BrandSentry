@@ -1,16 +1,24 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ConnectionState } from '../../types/api';
 import { ConnectivityPanel } from './ConnectivityPanel';
 import { Card } from '../../components/Card';
+import { brandApi } from '../../services/brand-api';
+import { useAuth } from '../auth/auth-context';
 import {
   ShieldCheck,
-  CheckCircle,
-  Clock,
   Layers,
-  Database,
-  Users,
-  Compass,
+  BookOpen,
+  FileCheck2,
+  FileText,
+  Sliders,
+  Sparkles,
+  ArrowRight,
+  PlusCircle,
+  AlertCircle,
+  Upload,
 } from 'lucide-react';
+import type { ValidationRunSummary, ContentSubmission } from '../../types/validation';
 
 interface OverviewViewProps {
   connectionState: ConnectionState;
@@ -23,31 +31,242 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
   onRetry,
   apiBaseUrl,
 }) => {
+  const { session } = useAuth();
+  const [docCount, setDocCount] = useState<number | null>(null);
+  const [ruleCount, setRuleCount] = useState<number | null>(null);
+  const [submissions, setSubmissions] = useState<ContentSubmission[] | null>(null);
+  const [runs, setRuns] = useState<ValidationRunSummary[] | null>(null);
+  const [metricsError, setMetricsError] = useState(false);
+  const [loadingMetrics, setLoadingMetrics] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (session) {
+      setLoadingMetrics(true);
+      setMetricsError(false);
+      Promise.allSettled([
+        brandApi.listDocuments(),
+        brandApi.listRules(),
+        brandApi.listSubmissions(5),
+        brandApi.listValidationRuns(5),
+      ]).then(([docsRes, rulesRes, subsRes, runsRes]) => {
+        if (!isMounted) return;
+        setMetricsError([docsRes, rulesRes, subsRes, runsRes].some((result) => result.status === 'rejected'));
+        if (docsRes.status === 'fulfilled' && Array.isArray(docsRes.value)) setDocCount(docsRes.value.length);
+        if (rulesRes.status === 'fulfilled' && Array.isArray(rulesRes.value)) setRuleCount(rulesRes.value.length);
+        if (subsRes.status === 'fulfilled' && Array.isArray(subsRes.value)) setSubmissions(subsRes.value);
+        if (runsRes.status === 'fulfilled' && Array.isArray(runsRes.value)) setRuns(runsRes.value);
+        setLoadingMetrics(false);
+      });
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [session]);
+
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
-      {/* Hero / Platform Mission */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-850 to-slate-950 text-white p-8 sm:p-10 shadow-lg border border-slate-800">
-        <div className="relative z-10 max-w-3xl space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            <span className="w-2 h-2 rounded-full bg-emerald-400" />
-            Phase 1B: Frontend & API Integration Foundation
+      {/* Hero / Platform Mission Card (Neumorphic finish) */}
+      <div className="overview-hero neu-card p-6 sm:p-8">
+        <div className="relative z-10 max-w-3xl space-y-3">
+          <div className="text-xs font-semibold uppercase tracking-widest text-brand-700 dark:text-brand-300">
+            Your governance workspace
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-            AI-Assisted Pre-Publication Brand Governance
+          <h1 className="font-display text-3xl sm:text-4xl leading-tight tracking-tight">
+            On brand. Backed by evidence.
           </h1>
-          <p className="text-base sm:text-lg text-slate-300 font-medium leading-relaxed">
+          <p className="text-sm sm:text-base text-slate-700 dark:text-slate-200 font-medium leading-relaxed">
             Every claim verified. Every decision accountable.
           </p>
-          <p className="text-sm text-slate-400 max-w-2xl leading-normal">
-            BrandSentry checks marketing and communication materials against approved brand guidelines, facts, and assets. Missing evidence triggers <span className="text-amber-300 font-semibold">Needs Verification</span> rather than ungrounded assumptions, leaving final sign-off in human hands.
+          <p className="text-sm text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed">
+            Check your content against approved guidelines and facts. Missing evidence stays <span className="font-semibold">Needs Verification</span>. Final sign-off stays with people.
           </p>
         </div>
 
-        {/* Decorative background accent */}
-        <div className="absolute -right-10 -bottom-10 w-80 h-80 rounded-full bg-emerald-500/5 blur-3xl pointer-events-none" />
       </div>
 
-      {/* Real FastAPI Backend Connectivity Panel */}
+      {metricsError && <p role="status" className="text-sm text-slate-600 dark:text-slate-300">Some workspace counts could not be loaded. Unavailable values are shown as a dash.</p>}
+
+      {/* 4 Soft Neumorphic KPI Cards (Inspired by the Reference Dashboard) */}
+      <section aria-label="Governance metrics overview">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Card 1: Brand Guidelines */}
+          <Card className="p-5 flex flex-col justify-between neu-card-interactive">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Guidelines Ingested
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 flex items-center justify-center">
+                <BookOpen className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-baseline justify-between">
+              <span className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
+                {loadingMetrics ? '—' : (docCount ?? '—')}
+              </span>
+              <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                Knowledge sources
+              </span>
+            </div>
+            <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
+              <Link to="/vault" className="hover:text-brand-600 dark:hover:text-brand-400 flex items-center gap-1">
+                Manage Vault <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+          </Card>
+
+          {/* Card 2: Deterministic Rules */}
+          <Card className="p-5 flex flex-col justify-between neu-card-interactive">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Brand Rules
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 flex items-center justify-center">
+                <Sliders className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-baseline justify-between">
+              <span className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
+                {loadingMetrics ? '—' : (ruleCount ?? '—')}
+              </span>
+              <span className="text-[11px] font-medium text-brand-600 dark:text-brand-400">
+                Configured rules
+              </span>
+            </div>
+            <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
+              <Link to="/vault" className="hover:text-brand-600 dark:hover:text-brand-400 flex items-center gap-1">
+                View Rules <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+          </Card>
+
+          {/* Card 3: Draft Submissions */}
+          <Card className="p-5 flex flex-col justify-between neu-card-interactive">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Recent Submissions
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 flex items-center justify-center">
+                <FileText className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-baseline justify-between">
+              <span className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
+                {loadingMetrics ? '—' : (submissions?.length ?? '—')}
+              </span>
+              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                Drafts & Revisions
+              </span>
+            </div>
+            <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
+              <Link to="/studio" className="hover:text-brand-600 dark:hover:text-brand-400 flex items-center gap-1">
+                Open Studio <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+          </Card>
+
+          {/* Card 4: Validation Runs */}
+          <Card className="p-5 flex flex-col justify-between neu-card-interactive">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Validation Engine
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center">
+                <FileCheck2 className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-baseline justify-between">
+              <span className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
+                {loadingMetrics ? '—' : (runs?.length ?? '—')}
+              </span>
+              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                Recent Runs
+              </span>
+            </div>
+            <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
+              <Link to="/runs" className="hover:text-brand-600 dark:hover:text-brand-400 flex items-center gap-1">
+                Run History <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+          </Card>
+        </div>
+      </section>
+
+      {/* Quick Actions & AI Provider Transparency Banner */}
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-brand-600 dark:text-brand-400" />
+              Quick Governance Actions
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <Link
+              to="/studio"
+              className="p-4 rounded-xl neu-card hover:border-brand-300 dark:hover:border-brand-700 flex flex-col gap-2 group transition-all"
+            >
+              <div className="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-900/40 text-brand-600 dark:text-brand-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <PlusCircle className="w-4 h-4" />
+              </div>
+              <span className="text-sm font-semibold text-slate-900 dark:text-white">Draft Submission</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400 leading-snug">
+                Write or paste marketing copy to validate against brand rules.
+              </span>
+            </Link>
+
+            <Link
+              to="/vault"
+              className="p-4 rounded-xl neu-card hover:border-brand-300 dark:hover:border-brand-700 flex flex-col gap-2 group transition-all"
+            >
+              <div className="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-900/40 text-brand-600 dark:text-brand-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Upload className="w-4 h-4" />
+              </div>
+              <span className="text-sm font-semibold text-slate-900 dark:text-white">Upload Guidelines</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400 leading-snug">
+                Add PDF or text guidelines as evidence for content checks.
+              </span>
+            </Link>
+
+            <Link
+              to="/vault"
+              className="p-4 rounded-xl neu-card hover:border-brand-300 dark:hover:border-brand-700 flex flex-col gap-2 group transition-all"
+            >
+              <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Sliders className="w-4 h-4" />
+              </div>
+              <span className="text-sm font-semibold text-slate-900 dark:text-white">Configure Rules</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400 leading-snug">
+                Set restricted terms, patterns, and preferred phrasing.
+              </span>
+            </Link>
+          </div>
+        </div>
+
+        {/* Honest Engine & Provider State Card */}
+        <div className="p-4 rounded-xl neu-card bg-slate-50/70 dark:bg-slate-900/50 flex flex-col justify-between gap-3">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
+              <AlertCircle className="w-4 h-4 text-amber-500" />
+              <span>Validation Engine Status</span>
+            </div>
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              <strong>Rule checks:</strong> Your configured terms and patterns are checked when you run validation.
+            </p>
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              <strong>AI analysis:</strong> Each run records its availability. If AI is unavailable, rule findings remain visible for your review.
+            </p>
+          </div>
+
+          <div className="text-[11px] text-slate-500 flex items-center gap-1.5 pt-2 border-t border-slate-200 dark:border-slate-800">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <span>Workspace: {session?.workspace.name ?? 'Connected'}</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Real FastAPI Backend Connectivity Panel (Keeps exact elements & test-ids) */}
       <section aria-labelledby="connectivity-heading">
         <h2 id="connectivity-heading" className="sr-only">
           Backend Connectivity Status
@@ -62,145 +281,50 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
       {/* Governance Architecture Pillars */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-            <Layers className="w-5 h-5 text-emerald-600" aria-hidden="true" />
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Layers className="w-5 h-5 text-brand-600 dark:text-brand-400" aria-hidden="true" />
             Governance Architecture Principles
           </h2>
-          <span className="text-xs text-slate-500">System Design Guarantees</span>
+          <span className="text-xs text-slate-500 dark:text-slate-400">System Design Guarantees</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card className="p-5 space-y-3">
-            <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
-              <ShieldCheck className="w-5 h-5 text-emerald-600" aria-hidden="true" />
+            <div className="w-9 h-9 rounded-xl bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 flex items-center justify-center">
+              <ShieldCheck className="w-5 h-5" aria-hidden="true" />
             </div>
-            <h3 className="text-sm font-semibold text-slate-900">
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
               Evidence-Grounded Findings
             </h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Every identified violation or suggestion links directly to an approved guideline version or canonical fact. Unverifiable claims are flagged for verification rather than hallucinated.
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+              All claims require direct citations against approved brand guidelines or verified factual registers. The model is barred from inventing citations.
             </p>
           </Card>
 
           <Card className="p-5 space-y-3">
-            <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center">
-              <Users className="w-5 h-5 text-blue-600" aria-hidden="true" />
+            <div className="w-9 h-9 rounded-xl bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 flex items-center justify-center">
+              <FileCheck2 className="w-5 h-5" aria-hidden="true" />
             </div>
-            <h3 className="text-sm font-semibold text-slate-900">
-              Human-Controlled Authority
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+              Immutable Content Revisions
             </h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              AI provides automated pre-checks and suggested corrections, but cannot approve content autonomously. Sign-off remains with authorised human reviewers.
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+              Validation runs snapshot exact content hashes and evidence chunk IDs. Edits produce new immutable versions, preserving the audit trail.
             </p>
           </Card>
 
           <Card className="p-5 space-y-3">
-            <div className="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center">
-              <Database className="w-5 h-5 text-indigo-600" aria-hidden="true" />
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center">
+              <Sparkles className="w-5 h-5" aria-hidden="true" />
             </div>
-            <h3 className="text-sm font-semibold text-slate-900">
-              Immutable Audit & Revisions
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+              Deterministic Fallback
             </h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Submissions, revisions, validations, and review decisions are permanently versioned in SQLite with atomic audit event logs for regulatory compliance.
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+              When AI providers are unavailable, rate-limited, or unconfigured, the deterministic rule engine continues executing without disruption.
             </p>
           </Card>
         </div>
-      </section>
-
-      {/* Phased Roadmap & Destination Preview */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-            <Compass className="w-5 h-5 text-emerald-600" aria-hidden="true" />
-            Implementation Roadmap Status
-          </h2>
-          <span className="text-xs text-slate-500">Staged Delivery Gate</span>
-        </div>
-
-        <Card className="p-6">
-          <div className="divide-y divide-slate-100">
-            {/* Phase 1 */}
-            <div className="py-4 first:pt-0 flex items-start gap-3">
-              <div className="mt-0.5">
-                <CheckCircle className="w-5 h-5 text-emerald-600" aria-hidden="true" />
-              </div>
-              <div className="space-y-1 flex-1">
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <span className="text-sm font-semibold text-slate-900">
-                    Phase 1: Foundation (Backend 1A & Frontend 1B)
-                  </span>
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
-                    Current Milestone
-                  </span>
-                </div>
-                <p className="text-xs text-slate-600">
-                  FastAPI service factory, health/readiness, CORS, request IDs, typed API client, accessible application shell, and verified localhost HTTP connectivity.
-                </p>
-              </div>
-            </div>
-
-            {/* Phase 2 */}
-            <div className="py-4 flex items-start gap-3 opacity-80">
-              <div className="mt-0.5">
-                <Clock className="w-5 h-5 text-slate-400" aria-hidden="true" />
-              </div>
-              <div className="space-y-1 flex-1">
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <span className="text-sm font-semibold text-slate-700">
-                    Phase 2: Identity & Session Management
-                  </span>
-                  <span className="text-xs font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-600">
-                    Upcoming
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500">
-                  Google sign-in via Firebase Authentication, isolated demo guest sessions, role authorization, and persistent session tokens.
-                </p>
-              </div>
-            </div>
-
-            {/* Phase 3 */}
-            <div className="py-4 flex items-start gap-3 opacity-80">
-              <div className="mt-0.5">
-                <Clock className="w-5 h-5 text-slate-400" aria-hidden="true" />
-              </div>
-              <div className="space-y-1 flex-1">
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <span className="text-sm font-semibold text-slate-700">
-                    Phase 3: Brand Knowledge Vault & Content Submission
-                  </span>
-                  <span className="text-xs font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-600">
-                    Upcoming
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500">
-                  Guideline CRUD, versioning, rule indexing, content draft submissions, and deterministic rule evaluation.
-                </p>
-              </div>
-            </div>
-
-            {/* Phase 4 & 5 */}
-            <div className="py-4 last:pb-0 flex items-start gap-3 opacity-80">
-              <div className="mt-0.5">
-                <Clock className="w-5 h-5 text-slate-400" aria-hidden="true" />
-              </div>
-              <div className="space-y-1 flex-1">
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <span className="text-sm font-semibold text-slate-700">
-                    Phases 4 & 5: AI Validation, Human Review & Deployment
-                  </span>
-                  <span className="text-xs font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-600">
-                    Upcoming
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500">
-                  Gemini semantic validation adapter, evidence verifier, reviewer queue with approval workflow, live insights, and Railway/Vercel production release.
-                </p>
-              </div>
-            </div>
-          </div>
-        </Card>
       </section>
     </div>
   );

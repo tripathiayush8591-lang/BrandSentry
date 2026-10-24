@@ -3,6 +3,11 @@ import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import App from '../src/app/App';
 import { StatusResponse } from '../src/types/api';
+import { demoSession } from './auth-fixtures';
+vi.mock('../src/services/auth-api', async (original) => {
+  const actual = await original<typeof import('../src/services/auth-api')>();
+  return { ...actual, authApi: { me: async () => demoSession() } };
+});
 
 describe('App Integration', () => {
   const originalFetch = global.fetch;
@@ -42,12 +47,12 @@ describe('App Integration', () => {
     );
 
     // Brand logo & wordmark
-    expect(screen.getByText('Brand')).toBeInTheDocument();
-    expect(screen.getByText('Sentry')).toBeInTheDocument();
+    await screen.findByText('Guest Demo');
+    expect(screen.getByRole('link', { name: 'BrandSentry home' })).toBeInTheDocument();
 
     // Mission and overview
     expect(
-      screen.getByText('AI-Assisted Pre-Publication Brand Governance')
+      screen.getByText('On brand. Backed by evidence.')
     ).toBeInTheDocument();
     expect(
       screen.getByText('Every claim verified. Every decision accountable.')
@@ -63,14 +68,14 @@ describe('App Integration', () => {
     });
   });
 
-  it('renders 404 Not Found fallback when navigating to unknown route', () => {
+  it('renders 404 Not Found fallback when navigating to unknown route', async () => {
     render(
       <MemoryRouter initialEntries={['/some/nonexistent/page']}>
         <App />
       </MemoryRouter>
     );
 
-    expect(screen.getByText('Page Not Found')).toBeInTheDocument();
+    expect(await screen.findByText('Page Not Found')).toBeInTheDocument();
     expect(screen.getByText('/some/nonexistent/page')).toBeInTheDocument();
     expect(screen.getByText('Return to Overview')).toBeInTheDocument();
   });

@@ -6,7 +6,7 @@ import { StatusResponse, ConnectionState, ApiErrorResponse } from '../types/api'
  */
 export function getApiBaseUrl(): string {
   const envUrl = import.meta.env.VITE_API_BASE_URL;
-  if (typeof envUrl === 'string' && envUrl.trim().length > 0) {
+  if (typeof envUrl === 'string') {
     return envUrl.trim().replace(/\/+$/, '');
   }
   return 'http://127.0.0.1:8000';

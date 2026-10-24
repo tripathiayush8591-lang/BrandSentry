@@ -14,8 +14,12 @@ def settings(tmp_path: pytest.TempPathFactory) -> Settings:
     return Settings(
         app_env="development",
         database_url=f"sqlite:///{(tmp_path / 'test.sqlite').as_posix()}",
+        upload_dir=str(tmp_path / "uploads"),
         frontend_origins="http://localhost:5173,http://127.0.0.1:5173",
         log_level="WARNING",
+        # Never let a locally configured GEMINI_API_KEY (ignored backend/.env)
+        # turn an automated suite into live provider traffic.
+        gemini_api_key=None,
     )
 
 

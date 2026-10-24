@@ -4,7 +4,8 @@ import { NAVIGATION_ITEMS } from '../types/navigation';
 import {
   LayoutDashboard,
   Archive,
-  FileCheck2,
+  FileEdit,
+  ShieldCheck,
   CheckCircle2,
   BarChart3,
   Lock,
@@ -13,15 +14,17 @@ import {
 const getNavIcon = (id: string) => {
   switch (id) {
     case 'overview':
-      return <LayoutDashboard className="w-4 h-4" aria-hidden="true" />;
+      return <LayoutDashboard className="w-4 h-4 flex-shrink-0" aria-hidden="true" />;
     case 'brand-vault':
-      return <Archive className="w-4 h-4" aria-hidden="true" />;
-    case 'content-review':
-      return <FileCheck2 className="w-4 h-4" aria-hidden="true" />;
+      return <Archive className="w-4 h-4 flex-shrink-0" aria-hidden="true" />;
+    case 'content-studio':
+      return <FileEdit className="w-4 h-4 flex-shrink-0" aria-hidden="true" />;
+    case 'validation-runs':
+      return <ShieldCheck className="w-4 h-4 flex-shrink-0" aria-hidden="true" />;
     case 'approvals':
-      return <CheckCircle2 className="w-4 h-4" aria-hidden="true" />;
+      return <CheckCircle2 className="w-4 h-4 flex-shrink-0" aria-hidden="true" />;
     case 'insights':
-      return <BarChart3 className="w-4 h-4" aria-hidden="true" />;
+      return <BarChart3 className="w-4 h-4 flex-shrink-0" aria-hidden="true" />;
     default:
       return null;
   }
@@ -34,7 +37,7 @@ interface NavigationProps {
 
 export const Navigation: React.FC<NavigationProps> = ({
   onItemClick,
-  orientation = 'horizontal',
+  orientation = 'vertical',
 }) => {
   const isHorizontal = orientation === 'horizontal';
 
@@ -43,8 +46,8 @@ export const Navigation: React.FC<NavigationProps> = ({
       aria-label="Main Navigation"
       className={
         isHorizontal
-          ? 'flex items-center gap-1'
-          : 'flex flex-col gap-1.5'
+          ? 'flex items-center gap-1.5'
+          : 'flex flex-col gap-1.5 w-full'
       }
     >
       {NAVIGATION_ITEMS.map((item) => {
@@ -58,15 +61,15 @@ export const Navigation: React.FC<NavigationProps> = ({
               role="link"
               aria-disabled="true"
               title={`${item.label} (Upcoming in ${item.badge ?? 'future phases'})`}
-              className={`group flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 bg-transparent cursor-not-allowed select-none ${
-                isHorizontal ? 'opacity-75 hover:opacity-100' : ''
+              className={`flex items-center justify-between gap-2.5 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-500 dark:text-slate-400 bg-transparent cursor-not-allowed select-none ${
+                isHorizontal ? 'opacity-70' : 'w-full'
               }`}
             >
-              <div className="flex items-center gap-2">
-                <span className="text-slate-400">{icon}</span>
-                <span>{item.label}</span>
+              <div className="flex items-center gap-2.5 truncate">
+                <span>{icon}</span>
+                <span className="truncate">{item.label}</span>
               </div>
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold tracking-wide uppercase px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 border border-slate-200">
+              <span className="inline-flex items-center gap-1 text-[10px] font-semibold tracking-wider uppercase px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                 <Lock className="w-2.5 h-2.5" aria-hidden="true" />
                 {item.badge}
               </span>
@@ -79,17 +82,17 @@ export const Navigation: React.FC<NavigationProps> = ({
             key={item.id}
             to={item.href}
             onClick={onItemClick}
-            end
+            end={item.href === '/'}
             className={({ isActive }) =>
-              `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              `flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
                 isActive
-                  ? 'bg-slate-900 text-white shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  ? 'bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 font-semibold shadow-sm border border-brand-200/60 dark:border-brand-800/60'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/50'
               }`
             }
           >
-            {icon}
-            <span>{item.label}</span>
+            <span className="text-current">{icon}</span>
+            <span className="truncate">{item.label}</span>
           </NavLink>
         );
       })}

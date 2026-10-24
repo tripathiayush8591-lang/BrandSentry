@@ -10,6 +10,7 @@ connection as required by docs/ARCHITECTURE.md §E.
 
 from __future__ import annotations
 
+import contextlib
 import logging
 import os
 from pathlib import Path
@@ -102,13 +103,32 @@ def check_database_connectivity(engine: Engine) -> tuple[bool, str | None]:
 
 
 def check_storage_writable(database_url: str) -> tuple[bool, str | None]:
-    """Verify the directory backing the SQLite file exists and is writable."""
+    """Verify the directory backing the SQLite file accepts real writes.
+
+    A permission-bit check alone is not sufficient on some volume mounts; the
+    probe actually creates, writes and deletes a temporary file.
+    """
     db_path = database_file_path(database_url)
     if db_path is None:
         return True, None
-    directory = db_path.parent
+    return check_directory_writable(db_path.parent, create=False)
+
+
+def check_directory_writable(directory: Path, *, create: bool = True) -> tuple[bool, str | None]:
+    """Probe that ``directory`` exists (optionally creating it) and is writable."""
     if not directory.is_dir():
-        return False, f"database directory does not exist: {directory}"
-    if not os.access(directory, os.W_OK):
-        return False, f"database directory is not writable: {directory}"
+        if not create:
+            return False, f"directory does not exist: {directory}"
+        try:
+            directory.mkdir(parents=True, exist_ok=True)
+        except OSError as exc:
+            return False, f"directory cannot be created: {directory} ({type(exc).__name__})"
+    probe = directory / f".write_probe_{os.urandom(8).hex()}.tmp"
+    try:
+        probe.write_bytes(b"ok")
+    except OSError as exc:
+        return False, f"directory is not writable: {directory} ({type(exc).__name__})"
+    finally:
+        with contextlib.suppress(OSError):
+            probe.unlink(missing_ok=True)
     return True, None

@@ -4,35 +4,41 @@
 
 ## 1. Target topology and data durability
 - Vercel: React/Vite static SPA in `frontend/`. Contains **no** Gemini secrets, SQLite, uploaded guideline originals or Firebase Admin keys.
+- **Same-origin API proxy**: `frontend/vercel.json` rewrites `/api/:path*` to the Railway HTTPS domain (substitute `REPLACE-WITH-RAILWAY-DOMAIN` at deploy) and stamps `no-store` CDN headers on `/api`. Build `VITE_API_BASE_URL` as **empty** (relative URLs) so the browser talks to the Vercel origin only — cross-origin cookies/CSRF are avoided by construction. The SPA fallback covers all non-`/api` routes.
 - Railway: single FastAPI service in `backend/` with `/health`, `/ready`, production command bound to `$PORT` on `0.0.0.0`, restrictive CORS.
-- Railway attached persistent volume **mounted at `/data`**. SQLite: `/data/db/brandsentry.sqlite`; uploads: `/data/uploads`. Verify actual mount and write permissions at runtime.
-- Firebase Auth: Google provider enabled; production/preview domain configuration as required. Backend independently verifies ID token with Firebase Admin SDK.
+- Railway attached persistent volume **mounted at `/data`**. SQLite: `/data/db/brandsentry.sqlite`; uploads: `/data/uploads`. In `APP_ENV=production` the backend **refuses to start** unless `DATABASE_URL` is an absolute `sqlite:////...` path and `UPLOAD_DIR` is absolute (fail-closed, `app/main.py`). `/ready` write-probes both directories at runtime. Verify actual mount and write permissions at runtime.
+- Request limits: `Content-Length` over the per-type cap (multipart = 5 MiB upload cap + 1 MiB overhead; JSON 256 KiB; other 1 MiB) is rejected **413 before buffering**; chunked bodies abort at the cap mid-stream.
+- Client IP for per-IP limits is the **rightmost** `X-Forwarded-For` entry (the value the trusted edge proxy appended); spoofed left entries are ignored. Verify with spoofed headers through the deployed route (§5).
+- Every backend response carries `Cache-Control: private, no-store` at the origin.
+- Firebase Auth: Google provider enabled; production/preview domain configuration as required. Backend independently verifies ID token with Firebase Admin SDK and accepts **only** `sign_in_provider == "google.com"`.
 - Guest auth: self-contained short-lived backend sandbox, independent of Firebase login.
 - SQLite is intentionally a small, single-service MVP: do not autoscale to multiple writers without architectural review; back up and test restore.
 
 Official platform docs for verification:
 - https://vercel.com/docs/frameworks/frontend/vite (SPA routing)
 - https://vercel.com/docs/deployments
+- https://vercel.com/docs/routing/rewrites (external-origin proxying)
 - https://docs.railway.com/volumes (mounted at runtime, not build)
 - https://docs.railway.com/volumes/reference (volume plan limits)
 - https://firebase.google.com/docs/auth/admin/verify-id-tokens
 
 ## 2. Environment variable inventory — names, never values
 **Vercel frontend (build-time public configuration):**
-- `VITE_API_BASE_URL` (full HTTPS Railway public API origin)
+- `VITE_API_BASE_URL` — set to **empty string** with the same-origin proxy (unset falls back to loopback; never point it at Railway cross-origin anymore)
 - `VITE_FIREBASE_API_KEY`
 - `VITE_FIREBASE_AUTH_DOMAIN`
 - `VITE_FIREBASE_PROJECT_ID`
 - `VITE_FIREBASE_APP_ID`
 
 **Railway backend (private runtime secrets/settings):**
-- `APP_ENV`, `FRONTEND_ORIGINS` (explicit HTTPS origins incl. intended preview), `DATABASE_URL`, `UPLOAD_DIR`
-- `FIREBASE_PROJECT_ID`, `FIREBASE_SERVICE_ACCOUNT_JSON` (private; do not log or expose)
-- `GEMINI_API_KEY`, `GEMINI_MODEL` (verify available model)
-- `GUEST_SESSION_SIGNING_KEY` if used for auxiliary signing, `SESSION_TTL_HOURS`
-- `AI_GUEST_HOURLY_LIMIT`, `AI_GUEST_DAILY_LIMIT`, `AI_USER_HOURLY_LIMIT`, `AI_USER_DAILY_LIMIT`
-- `AI_GLOBAL_DAILY_CALL_LIMIT`, `AI_MAX_CONCURRENT`, `AI_REQUEST_TIMEOUT_SECONDS`, `AI_RESULT_CACHE_TTL_SECONDS`
-- `LOG_LEVEL`, `MAX_UPLOAD_BYTES`
+- `APP_ENV=production`, `FRONTEND_ORIGINS` (explicit HTTPS origins incl. intended preview), `DATABASE_URL=sqlite:////data/db/brandsentry.sqlite`, `UPLOAD_DIR=/data/uploads`
+- `FIREBASE_PROJECT_ID`, `FIREBASE_SERVICE_ACCOUNT_JSON` (private; do not log or expose; `FIREBASE_SERVICE_ACCOUNT_FILE` is the path-based alternative)
+- `GEMINI_API_KEY`, `GEMINI_MODEL` (verify available model), `GEMINI_TIMEOUT_SECONDS`, `GEMINI_MAX_RETRIES` (keep 0), `GEMINI_CALLS_PER_DAY`, `GEMINI_TOKENS_PER_DAY`
+- `SESSION_COOKIE_SECURE` (true in production), `SESSION_COOKIE_SAMESITE` (`lax` with the same-origin proxy), `USER_SESSION_TTL_HOURS`, `GUEST_SESSION_TTL_HOURS`, `GUEST_SESSIONS_PER_IP_PER_HOUR`
+- `KNOWLEDGE_MAX_UPLOAD_BYTES`, `KNOWLEDGE_MAX_EXTRACTED_CHARS`, `KNOWLEDGE_UPLOADS_PER_HOUR`, `KNOWLEDGE_SEARCHES_PER_HOUR`
+- `VALIDATION_MAX_CONTENT_CHARS`, `VALIDATION_USER_PER_HOUR`, `VALIDATION_GUEST_PER_HOUR`, `VALIDATION_WORKSPACE_PER_HOUR`, `VALIDATION_CACHE_TTL_HOURS`
+- `MAX_JSON_BODY_BYTES`, `MAX_OTHER_BODY_BYTES`, `MAX_MULTIPART_OVERHEAD_BYTES` (request caps; defaults are sane)
+- `LOG_LEVEL`
 
 **Platform-injected:** `PORT` from Railway. Do not hardcode port in deployed start command. Avoid putting Admin credentials or Gemini keys behind `VITE_`; all `VITE_` variables are exposed to browsers.
 
@@ -67,6 +73,9 @@ For every PR/feature slice:
 | Permissions | Guest cannot read real data; creator cannot approve own content | authZ test output |
 | Durability | Saved record and uploads survive service restart/redeployment | ID before/after |
 | Gemini budget guards | Duplicate click one provider call; cache hit saves call; limit -> stable 429 | counters/logs/tests |
+| Private cache policy | `Cache-Control: private, no-store` on every `/api` response incl. errors and auth; no CDN caching (`x-vercel-cache` miss/bypass) | curl -I evidence |
+| Body limits | Oversized upload/JSON rejected 413 before processing; normal requests unaffected | test output + curl 413 |
+| Spoofed forwarding headers | Rate limits keyed on the rightmost X-Forwarded-For entry; spoofed left entries cannot mint fresh limits | deployed 429 evidence |
 | AI degradation | Missing key/429/timeout presents partial result, never fake verification | test report |
 | Real approval | Exact content version, reviewer action and audit persisted | demo evidence |
 | Judge experience | New incognito judge can finish workflow unguided | manual test + feedback |

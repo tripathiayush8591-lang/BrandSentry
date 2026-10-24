@@ -1,6 +1,22 @@
-# BrandSentry Frontend (Phase 1B — Foundation)
+# BrandSentry Frontend (Phase 2B — Authentication)
 
 Lightweight, accessible React 18 + Vite + TypeScript frontend shell for BrandSentry, an AI-powered brand governance platform.
+
+Phase 2B adds `/login`, backend-session restoration, protected routes, Google popup exchange, isolated guest entry, and server-confirmed logout. The original foundation/connectivity view remains the protected home page; future product features remain disabled.
+
+## Authentication configuration and testing
+
+Copy `.env.example` to ignored `.env.local` and set the four `VITE_FIREBASE_*` public web configuration values for `brandsentry-68d05`. Never include Firebase Admin credentials in frontend variables. The implementation uses Firebase's modular SDK and in-memory persistence; it clears the transient Firebase identity after exchange and never treats it as application authority.
+
+`VITE_API_BASE_URL` is the API base before `/api/v1`. Use matching hostnames locally, e.g. frontend `http://127.0.0.1:5173` and backend `http://127.0.0.1:8000`. An explicitly empty base produces relative requests for a future same-origin proxy. That production proxy is not implemented in this phase.
+
+Both sign-in endpoints and `/auth/me` use `credentials: include`. The backend sets the HttpOnly session cookie and companion CSRF cookie. Authenticated mutations echo the session-bound CSRF value from memory or the readable cookie as `X-CSRF-Token`; initial sign-ins use the backend's Origin check and include CSRF when available. No session credentials are stored in localStorage/sessionStorage. `/auth/me` owns restoration and access state. SQLite-loaded timestamps without a timezone are interpreted as UTC for scheduling only; the browser clock does not override server authentication.
+
+On direct Vercel-to-Railway origins, the frontend cannot read Railway's companion cookie after refresh. Even with cross-site cookies enabled, CSRF restoration needs the future same-origin proxy or an approved backend change. Missing CSRF is reported; it is never bypassed.
+
+Run `npm test`, `npm run lint`, `npm run typecheck`, and `npm run build`. For real Chromium tests, run `npx playwright install chromium` once, then `npm run test:e2e`. These tests start a dedicated backend on port 8002 with `.data/phase2b-e2e.sqlite` and a frontend on 5174; they do not modify backend code. `BRANDSENTRY_TEST_PYTHON` can override the backend virtualenv interpreter. Test-only guest creation throttling is disabled in that isolated subprocess to permit repeat runs. Production/default limits are unchanged.
+
+Browser contexts are fresh/incognito. Traces, videos and storage-state dumps are disabled to prevent persisting session credentials. Evidence contains screenshots and cookie names/flags only. See `PHASE_2B_REPORT.md` for results and remaining blockers; backend cookie deletion and genuine Google completion are not claimed as passing.
 
 ## Architecture & Technology Stack
 
