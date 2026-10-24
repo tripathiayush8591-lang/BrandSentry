@@ -43,7 +43,7 @@ const ApplicationShell: React.FC = () => {
       <SessionProfile />
 
       {/* Main Body with Persistent Responsive Sidebar */}
-      <div className="flex-1 flex max-w-7xl w-full mx-auto">
+      <div className="workspace-body flex-1 flex w-full mx-auto">
         {/* Desktop Sidebar (visible on md+) */}
         <div className="hidden md:block w-64 flex-shrink-0">
           <Sidebar />

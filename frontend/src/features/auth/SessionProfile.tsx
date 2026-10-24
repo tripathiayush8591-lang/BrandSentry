@@ -12,7 +12,7 @@ export function SessionProfile() {
       <span className="session-kind">{guest ? 'Guest demo' : 'Google'}</span>
       <button className="session-logout" disabled={pending !== null} onClick={() => { void logout(); }}><LogOut size={16} aria-hidden="true" />{pending === 'logout' ? 'Signing out…' : 'Sign out'}</button>
     </div>
-    {guest && <p className="session-limit">Temporary demo · Your work stays separate from your Google account.</p>}
+    {guest && <details className="session-notice"><summary>About this demo</summary><p className="session-limit">Temporary demo · Your work stays separate from your Google account.</p></details>}
     {error && <p className="session-error" role="alert">{error}</p>}
   </section>;
 }

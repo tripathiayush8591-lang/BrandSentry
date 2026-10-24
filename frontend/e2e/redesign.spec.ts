@@ -53,6 +53,19 @@ test('LIVE_BACKEND: real guideline → rule → content → finding and evidence
   page.on('pageerror', (error) => errors.push(error.message));
   await guest(page);
   await page.getByRole('switch', { name: 'Dark mode' }).uncheck();
+  await page.setViewportSize({ width: 1584, height: 993 });
+  await expect.poll(() => page.locator('.editorial-hero img').evaluateAll((elements) =>
+    elements.every((element) => (element as HTMLImageElement).complete && (element as HTMLImageElement).naturalWidth > 0)
+  )).toBe(true);
+  await page.screenshot({ path: resolve(evidence, 'reference-light.png'), animations: 'disabled' });
+  await page.getByRole('switch', { name: 'Dark mode' }).check();
+  await page.setViewportSize({ width: 1440, height: 906 });
+  await expect.poll(() => page.locator('.editorial-portrait').evaluate((element) =>
+    (element as HTMLImageElement).complete && (element as HTMLImageElement).naturalWidth > 0
+  )).toBe(true);
+  await page.screenshot({ path: resolve(evidence, 'reference-dark.png'), animations: 'disabled' });
+  await page.getByRole('switch', { name: 'Dark mode' }).uncheck();
+  await page.setViewportSize({ width: 1440, height: 960 });
   await page.screenshot({ path: resolve(evidence, 'overview-light.png'), fullPage: true, animations: 'disabled' });
   const nav = page.getByRole('complementary', { name: 'Sidebar navigation' });
   await nav.getByRole('link', { name: 'Brand Vault', exact: true }).click();
@@ -151,7 +164,13 @@ test('LIVE_BACKEND: keyboard theme persistence, live system changes, reduced mot
 
   for (const dark of [false, true]) {
     if (dark) await toggle.check();
-    const cardBackground = await page.locator('.neu-card').last().evaluate((el) => getComputedStyle(el).backgroundColor);
+    await expect(page.locator(`.editorial-hero-art .ribbon-${dark ? 'dark' : 'light'}`)).toBeVisible();
+    await expect(page.locator(`.editorial-hero-art .ribbon-${dark ? 'light' : 'dark'}`)).toBeHidden();
+    await expect.poll(() => page.locator('.editorial-portrait').evaluate((el) => {
+      const image = el as HTMLImageElement;
+      return image.complete && image.naturalWidth > 0;
+    })).toBe(true);
+    const cardBackground = await page.locator('.bento-rules').evaluate((el) => getComputedStyle(el).backgroundColor);
     expect(await page.locator('.workspace-header').evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(cardBackground);
     expect(await page.locator('.workspace-sidebar').evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(cardBackground);
     const ratios = await page.evaluate(() => {

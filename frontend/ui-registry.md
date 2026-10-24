@@ -3,28 +3,28 @@
 > Generated for pattern consistency across subsequent engineering phases.
 > Style philosophy: Clean, accessible, credible B2B SaaS interface. Flexible design tokens, not a rigid cosmetic lock-in.
 
-## Current product baseline — approved ivory / emerald / vermilion refresh, 2026-10-24
+## Current product baseline — separate light/dark references, 2026-10-24
 
-This baseline supersedes the historical entries below, including the login palette.
-The user approved the visual plan and supplied the replacement wordmark font.
+Supersedes the earlier solid-tile refresh and historical entries below. The user's
+9.25 PM reference controls dark mode; the 9.39 PM reference controls light mode.
 
 | Pattern | Current implementation |
 | --- | --- |
-| Canvas / surface | `--color-canvas`: warm ivory #FFF8EC / jet black #080808. `--color-surface`: #FFFCF5 / #171417. |
-| Primary action | Emerald #087F5B, white text; hot pink #FF4FA3, dark #230915 text in dark mode. `.neu-btn-primary`. |
-| Secondary accent | Vermilion #D3382B on the guidelines tile (deepened for readable white text); dark plum #34244A at night. |
-| Branding | User-supplied glossy shield: `/images/brandsentry-icon.png`; shared `.brand-icon`, rounded corners, decorative empty alt beside accessible wordmarks. Same image is the favicon. |
-| Typography | Local ShineTypewriter at weight 400 for BrandSentry wordmarks only. Local Inter for headings, working text, controls and evidence. Font provenance: `public/fonts/README.md`. |
-| Card | `Card.tsx` / `.neu-card`: surface token, 1px border, 24px radius, single directional drop shadow. Small cards: 12px radius. |
-| Overview | `.overview-bento`: large emerald/pink drafting tile with two stacked guideline/rule tiles; full-width split recent-work panel. One column on mobile; no repeated three-card row. |
-| Form | `.neu-input`: 12px radius, token boundary, readable text and placeholder, 3px focus outline. No inset bevel. |
-| Spacing | Workspace sections 24px apart; tile padding 24–32px; bento gaps 16–22px. |
-| Interaction | Native keyboard-operable `details`/`summary` for connection and analysis metadata. Important failures remain visible outside disclosures. |
-| Copy | User-facing verbs: Check content, Upload guideline, Search guidelines. No phase numbers, engine marketing or architecture pillars in the main dashboard. |
-| Theme | Existing switch and Auto preference retained, 44px target, saved preference/system changes work. Reduced motion disables movement. |
-| Truthfulness | Counts still come from the same APIs; unavailable/loading values are dashes. AI-unavailable, Needs Verification, evidence, immutable versions and human-decision boundaries remain. |
+| Canvas / surfaces | Light paper ivory #F6F0DE; deep emerald #073E30 type. Dark canvas #080808, panels #101113, borders #2B2B31. |
+| Primary actions | Vermilion #D83215 with white text in light mode; pink #FF4FA3 with dark text at night. Hero CTA is emerald/ivory in light and lime #D9FC34/dark ink at night. |
+| Accent | Vermilion light headline; hot pink #FF2D96 dark headline. Emerald light links / lime secondary dark links. |
+| Artwork | Transparent generated grayscale portrait at night; emerald/ivory print portrait by day. Light vermilion orbital/halftone disks; dark broad pink/lime shapes. See `public/images/EDITORIAL_ASSETS.md`. |
+| Branding | User-supplied shield and local ShineTypewriter remain in the header/login/favicon. Inter stays the working font. |
+| Overview | `editorial.css`: 12-column bento, two-row portrait hero plus stacked knowledge/rule panels, two recent-work panels, full-width banner. Mobile reflows without removing actions. |
+| Card | `Card.tsx` / `.neu-card`: 20px overview radius, 1px boundary and restrained drop shadow. Background stays quiet; artwork is decorative and below content. |
+| Banner | Emerald with ivory text and vermilion emphasis in light; near-black with pink emphasis in dark. Existing source-checking/human-control message only. |
+| Header / session | One brand placement, compact session strip, sign-out remains visible. About this demo exposes the existing demo disclosure. |
+| Forms / focus | Existing `.neu-input`/button patterns, visible token outlines, unchanged labels/handlers. Native disclosures retain keyboard access. |
+| Truthfulness | Original real counters, API calls and version/evidence behavior. Loading/unavailable values remain dashes. No fictional upgrade, notifications, reviews or insights. |
+| Themes | Asset selection follows the app theme (including manual override); existing system preference, persistence and reduced motion behavior retained. |
 
-Files: `src/index.css`, `tailwind.config.js`, shared components and feature views.
+Files: `src/editorial.css`, `src/index.css`, `src/features/overview/OverviewView.tsx`,
+application shell, session strip, generated artwork and existing browser checks.
 Historical patterns follow for context only.
 
 ## Phase 2B authentication patterns — approved reference, 2026-10-23

@@ -1,5 +1,9 @@
 # Approved frontend refresh — 2026-10-24
 
+Historical first refresh. The subsequent user-selected dark and light references
+are implemented and verified in the latest `design-qa.md` and
+`frontend/ui-registry.md`; those supersede the solid-tile styling described here.
+
 Scope: the user-approved visual/copy plan, with user-supplied ShineTypewriter
 replacing Superpop. No backend, API schema, auth/session behavior, validation,
 storage, permission or provider changes.

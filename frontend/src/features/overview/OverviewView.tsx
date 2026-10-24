@@ -5,7 +5,8 @@ import { ConnectivityPanel } from './ConnectivityPanel';
 import { Card } from '../../components/Card';
 import { brandApi } from '../../services/brand-api';
 import { useAuth } from '../auth/auth-context';
-import { ArrowRight, PlusCircle, BookOpen, Sliders } from 'lucide-react';
+import { useTheme } from '../../context/theme-context';
+import { ArrowRight, PlusCircle, BookOpen, Sliders, FileText, ChartNoAxesColumn, ShieldCheck, Zap } from 'lucide-react';
 import type { ValidationRunSummary, ContentSubmission } from '../../types/validation';
 interface OverviewViewProps {
   connectionState: ConnectionState;
@@ -18,6 +19,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
   apiBaseUrl,
 }) => {
   const { session } = useAuth();
+  const { isDark } = useTheme();
   const [docCount, setDocCount] = useState<number | null>(null);
   const [ruleCount, setRuleCount] = useState<number | null>(null);
   const [submissions, setSubmissions] = useState<ContentSubmission[] | null>(null);
@@ -50,52 +52,72 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
   }, [session]);
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">{session?.workspace.name ?? 'Your workspace'}</p>
-          <h1 className="text-2xl font-bold tracking-tight">Your brand, in good hands.</h1>
-        </div>
-      </div>
+    <div className="editorial-overview max-w-7xl mx-auto">
       {metricsError && <p role="status" className="overview-note">Some counts could not be loaded. Unavailable values are shown as a dash.</p>}
       <section className="overview-bento" aria-label="Workspace overview">
-        <div className="overview-hero neu-card">
-          <div className="hero-eyebrow"><img src="/images/brandsentry-icon.png" alt="" className="brand-icon" /> Ready for your next idea</div>
-          <div className="space-y-4">
-            <h2>On brand. Backed by evidence.</h2>
+        <div className="editorial-hero">
+          <div className="editorial-hero-copy">
+            <p className="editorial-eyebrow">{session?.workspace.name ?? 'Your workspace'}</p>
+            <h1>Your brand, <br /><span>in good hands.</span></h1>
             <p>Check your content against your guidelines. See what needs attention before you publish.</p>
+            <Link to="/studio" className="hero-cta"><PlusCircle size={18} /> Create a submission <ArrowRight size={16} /></Link>
           </div>
-          <Link to="/studio" className="hero-cta"><PlusCircle size={18} /> Create a submission <ArrowRight size={16} /></Link>
+          <div className="editorial-hero-art" aria-hidden="true">
+            <img className="editorial-ribbon ribbon-light" src="/images/editorial-print-light.png" alt="" />
+            <img className="editorial-ribbon ribbon-dark" src="/images/editorial-shapes-dark.png" alt="" />
+            <img className="editorial-portrait" src={isDark ? '/images/editorial-portrait.png' : '/images/editorial-portrait-light.png'} alt="" />
+          </div>
         </div>
         <Card className="bento-vault">
+          <img className="tile-ribbon ribbon-light" src="/images/editorial-print-light.png" alt="" />
+          <img className="tile-ribbon ribbon-dark" src="/images/editorial-shapes-dark.png" alt="" />
           <div className="flex items-center justify-between gap-3"><h2 className="bento-label">Your guidelines</h2><BookOpen size={20} aria-hidden="true" /></div>
           <div className="bento-count">{loadingMetrics ? '—' : (docCount ?? '—')}</div>
           <Link to="/vault" className="bento-link">Upload or manage guidelines <ArrowRight size={15} /></Link>
         </Card>
         <Card className="bento-rules">
+          <img className="tile-ribbon ribbon-light" src="/images/editorial-print-light.png" alt="" />
+          <img className="tile-ribbon ribbon-dark" src="/images/editorial-shapes-dark.png" alt="" />
           <div className="flex items-center justify-between gap-3"><h2 className="bento-label">Brand rules</h2><Sliders size={20} aria-hidden="true" /></div>
           <div className="bento-count">{loadingMetrics ? '—' : (ruleCount ?? '—')}</div>
           <Link to="/vault" className="bento-link text-brand-700 dark:text-brand-300">Manage terms and phrasing <ArrowRight size={15} /></Link>
         </Card>
-        <Card className="bento-bottom">
-          <div>
-            <h2 className="bento-label">Recent submissions <span className="text-slate-500 dark:text-slate-400">· {loadingMetrics ? '—' : (submissions?.length ?? '—')}</span></h2>
+        <Card className="bento-recent recent-submissions">
+            <img className="tile-ribbon ribbon-light" src="/images/editorial-print-light.png" alt="" />
+            <img className="tile-ribbon ribbon-dark" src="/images/editorial-shapes-dark.png" alt="" />
+            <h2 className="bento-label"><FileText size={20} aria-hidden="true" /> Recent submissions <span className="text-slate-500 dark:text-slate-400">· {loadingMetrics ? '—' : (submissions?.length ?? '—')}</span></h2>
             <p className="overview-note">Pick up a draft or start something new.</p>
             <Link to="/studio" className="bento-link text-brand-700 dark:text-brand-300">Open Content Studio <ArrowRight size={15} /></Link>
-          </div>
-          <div>
-            <h2 className="bento-label">Recent checks <span className="text-slate-500 dark:text-slate-400">· {loadingMetrics ? '—' : (runs?.length ?? '—')}</span></h2>
+        </Card>
+        <Card className="bento-recent recent-checks">
+            <img className="tile-ribbon ribbon-light" src="/images/editorial-print-light.png" alt="" />
+            <img className="tile-ribbon ribbon-dark" src="/images/editorial-shapes-dark.png" alt="" />
+            <h2 className="bento-label"><ChartNoAxesColumn size={20} aria-hidden="true" /> Recent checks <span className="text-slate-500 dark:text-slate-400">· {loadingMetrics ? '—' : (runs?.length ?? '—')}</span></h2>
             <p className="overview-note">Revisit your findings and supporting sources.</p>
             <Link to="/runs" className="bento-link text-brand-700 dark:text-brand-300">View check history <ArrowRight size={15} /></Link>
+        </Card>
+        <Card className="editorial-banner">
+          <img className="banner-ribbon ribbon-light" src="/images/editorial-print-light.png" alt="" />
+          <img className="banner-ribbon ribbon-dark" src="/images/editorial-shapes-dark.png" alt="" />
+          <div className="editorial-banner-copy">
+            <p className="editorial-eyebrow">Ready for your next idea</p>
+            <h2>On brand. <span>Backed by evidence.</span></h2>
+          </div>
+          <div className="editorial-banner-points">
+            <span><Zap size={16} aria-hidden="true" /> Check your content</span>
+            <span><BookOpen size={16} aria-hidden="true" /> See supporting sources</span>
+            <span><ShieldCheck size={16} aria-hidden="true" /> Keep people in control</span>
           </div>
         </Card>
       </section>
+      <div className="editorial-utility">
       <p className="overview-note">Missing evidence is marked Needs Verification. Final decisions stay with people.</p>
       {connectionState.status === 'error' && <p role="status" className="text-sm text-rose-700 dark:text-rose-300">We couldn’t connect. Some actions may be unavailable. <button className="underline font-semibold" onClick={() => void onRetry()}>Try again</button></p>}
       <details className="service-details">
         <summary>Connection details</summary>
         <div><ConnectivityPanel connectionState={connectionState} onRetry={onRetry} apiBaseUrl={apiBaseUrl} /></div>
       </details>
+      </div>
     </div>
   );
 };

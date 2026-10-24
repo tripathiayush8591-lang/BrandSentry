@@ -52,7 +52,7 @@ describe('App Integration', () => {
 
     // Mission and overview
     expect(
-      screen.getByText('On brand. Backed by evidence.')
+      screen.getByRole('heading', { name: 'On brand. Backed by evidence.' })
     ).toBeInTheDocument();
     expect(
       screen.getByText('Missing evidence is marked Needs Verification. Final decisions stay with people.')

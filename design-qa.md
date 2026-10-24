@@ -1,3 +1,81 @@
+# Reference-led dark and light dashboard QA — 2026-10-24
+
+Source visual truth:
+- Dark: `C:/Users/yash2/Downloads/WhatsApp Image 2026-10-24 at 9.25.31 PM.jpeg`.
+- Light: `C:/Users/yash2/Downloads/WhatsApp Image 2026-10-24 at 9.39.36 PM.jpeg`.
+
+Implementation evidence: `frontend/evidence/phase3c-redesign/reference-light.png`
+and `reference-dark.png`. Full-view side-by-side comparisons:
+`editorial-comparison-light.png` and `editorial-comparison-dark.png` in that folder.
+Both comparisons were opened and visually inspected together with the source.
+The local implementation was also opened and exercised in the Codex in-app browser.
+
+## Normalization and state
+
+Light source and actual capture: 1584 × 993 pixels, 1584 × 993 CSS viewport,
+device scale factor 1; no resize. The comparison is 3168 × 1025 including a
+32px label strip. Dark source has outer black framing; its app region is cropped
+at (0, 61)–(720, 514), yielding 720 × 453. Actual dark viewport: 1440 × 906 CSS
+pixels at density 1, reduced by exactly 2 for the 1440 × 485 comparison montage.
+State: fresh isolated Guest Demo workspace, real zero counts, no loading dashes,
+light/dark selected through the actual theme control. These are different user-
+selected design references, so light is an intentional editorial print adaptation.
+
+## Findings and comparison history
+
+1. Initial thin neon ribbons were visually busy in the small cards (P2).
+   Replaced with broad pink/lime forms in dark mode and the new light reference's
+   vermilion disks, orbital curves and emerald halftone artwork.
+2. Initial decorative artwork crossed the desktop supporting copy (P2).
+   Confined desktop artwork to the right 48% of the hero; narrowed supporting
+   copy on mobile and kept tile links over a surface-colored readable background.
+3. Initial typography and tile density undershot the light reference (P2).
+   Increased headline, metric and card typography; widened the responsive sidebar;
+   enlarged the hero, recent-work panels and full-width banner. Recaptured both
+   full views after the fixes and visually compared them against their references.
+
+No remaining actionable P0/P1/P2 mismatch within the authorised reference-led
+scope. The headline, portrait, asymmetric bento hierarchy, two recent-work panels,
+outlined surfaces and banner follow both references. Light uses paper ivory,
+emerald type, vermilion accents and emerald banner; dark uses black, pink and lime.
+
+Intentional product constraints: keep the supplied shield and ShineTypewriter
+wordmark; keep truthful session identity/sign-out, verification notice and optional
+connection details. Do not fabricate the references' Upgrade to Pro, notification
+or account controls. Existing future Approvals/Insights remain disabled. Images
+are decorative generated artwork, not facts, customer data or identity avatars.
+
+## Interaction and responsive checks
+
+- `npm run lint`, `npm run typecheck`, `npm run build`: pass.
+- `npm test`: 77 passed / 11 files.
+- `npm run test:e2e`: 12 passed across real local auth and reference/workflow suites.
+- Targeted reference suite rerun after the last CSS changes: 2 passed, including
+  guideline upload/approval → brand rule → submission → findings/source evidence.
+- Viewports 1440, 820, 390 and 320; no page overflow; all core routes accessible.
+- Keyboard navigation, Escape return focus, theme persistence/system changes,
+  reduced motion, token text/action contrast and correct theme artwork tested.
+- Actual portrait load verified (complete and nonzero natural width). Reference
+  snapshots also require all hero images to load. Main-flow page-error listener
+  found no runtime errors. In-app browser refreshed after assets were saved;
+  no broken images remained in the final capture. The in-app browser's error
+  console was also checked and returned no errors.
+- Backend regression: 196 passed, 1 Windows-only skip with provider key empty.
+- No LIVE_PROVIDER Google/Gemini request or LIVE_DEPLOYMENT check performed.
+
+## Follow-up polish
+
+P3: the generated portrait and paper-print texture are interpretations rather
+than the exact subjects in the references. Original transparent PNGs are retained;
+future delivery optimization can reduce raster transfer size. This does not block
+local review or the existing functional flow.
+
+final result: passed
+
+---
+
+# Historical visual QA (superseded for the dashboard)
+
 # Phase 2B login visual QA
 
 Source visual truth: `C:/Users/yash2/Downloads/Trust starts here at BrandSentry.png` (1586×992 pixels).
