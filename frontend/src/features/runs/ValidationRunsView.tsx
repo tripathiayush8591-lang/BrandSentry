@@ -48,12 +48,9 @@ export const ValidationRunsView: React.FC = () => {
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               Validation Runs
             </h1>
-            <span className="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800">
-              Governance Audit
-            </span>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Complete execution history of brand governance validations, evidence citations, and deterministic rule checks.
+            Revisit your content checks, findings, and sources.
           </p>
         </div>
 
@@ -101,7 +98,7 @@ export const ValidationRunsView: React.FC = () => {
           <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
             Recorded Runs ({filteredRuns.length})
           </h2>
-          <span className="text-xs text-slate-500">Synchronous & Cache-Tracked</span>
+          <span className="text-xs text-slate-500"></span>
         </div>
 
         {loading && runs.length === 0 ? (
@@ -127,8 +124,8 @@ export const ValidationRunsView: React.FC = () => {
                 <tr>
                   <th className="py-3 px-4">Run ID</th>
                   <th className="py-3 px-4">State</th>
-                  <th className="py-3 px-4">AI Engine Status</th>
-                  <th className="py-3 px-4 text-center">Cache</th>
+                  <th className="py-3 px-4">AI analysis</th>
+                  <th className="py-3 px-4 text-center">Details</th>
                   <th className="py-3 px-4 text-center">Findings</th>
                   <th className="py-3 px-4">Executed At</th>
                   <th className="py-3 px-4 text-right">Action</th>
@@ -169,17 +166,17 @@ export const ValidationRunsView: React.FC = () => {
                             : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
                         }`}
                       >
-                        {run.ai_status === 'unavailable' ? 'Deterministic Only' : run.ai_status}
+                        {run.ai_status === 'unavailable' ? 'Rule checks only' : run.ai_status}
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-center">
-                      {run.cache_hit ? (
+                      <details><summary className="cursor-pointer">Analysis</summary>{run.cache_hit ? (
                         <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded">
-                          <Zap className="w-2.5 h-2.5" /> Hit
+                          <Zap className="w-2.5 h-2.5" /> Reused result
                         </span>
                       ) : (
-                        <span className="text-[10px] text-slate-500">Miss</span>
-                      )}
+                        <span className="text-[10px] text-slate-500">New analysis</span>
+                      )}</details>
                     </td>
                     <td className="py-3.5 px-4 text-center">
                       <span

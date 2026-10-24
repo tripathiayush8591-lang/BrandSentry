@@ -8,11 +8,11 @@ export function SessionProfile() {
   return <section className="session-profile" aria-label="Your session">
     <div className="session-profile-inner">
       <UserRound size={20} aria-hidden="true" />
-      <div className="session-profile-details"><strong>{session.user.display_name}</strong><span>{guest ? 'Guest · temporary demo workspace' : session.user.email ?? 'Google account'} · {session.workspace.name}</span></div>
+      <div className="session-profile-details"><strong>{session.user.display_name}</strong><span>{guest ? session.workspace.name : `${session.user.email ?? 'Google account'} · ${session.workspace.name}`}</span></div>
       <span className="session-kind">{guest ? 'Guest demo' : 'Google'}</span>
       <button className="session-logout" disabled={pending !== null} onClick={() => { void logout(); }}><LogOut size={16} aria-hidden="true" />{pending === 'logout' ? 'Signing out…' : 'Sign out'}</button>
     </div>
-    {guest && <p className="session-limit">This isolated demo expires automatically. Sign out to switch to a Google account; demo work will stay separate.</p>}
+    {guest && <p className="session-limit">Temporary demo · Your work stays separate from your Google account.</p>}
     {error && <p className="session-error" role="alert">{error}</p>}
   </section>;
 }

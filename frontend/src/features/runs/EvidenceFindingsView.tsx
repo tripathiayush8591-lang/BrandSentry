@@ -10,7 +10,6 @@ import {
   AlertTriangle,
   Copy,
   Check,
-  Zap,
   Layers,
   Info,
 } from 'lucide-react';
@@ -54,7 +53,7 @@ export const EvidenceFindingsView: React.FC = () => {
     return (
       <div className="py-16 text-center space-y-3">
         <div className="w-8 h-8 rounded-full border-2 border-brand-600 border-t-transparent animate-spin mx-auto" />
-        <p className="text-xs text-slate-500">Loading validation findings and evidence snapshots...</p>
+        <p className="text-xs text-slate-500">Loading findings and sources…</p>
       </div>
     );
   }
@@ -105,18 +104,12 @@ export const EvidenceFindingsView: React.FC = () => {
                 : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
             }`}
           >
-            Run State: {run.state}
+            Check status: {run.state}
           </span>
 
           <span className="px-3 py-1 rounded-full text-xs font-semibold bg-brand-100 text-brand-800 dark:bg-brand-950/60 dark:text-brand-300 border border-brand-200 dark:border-brand-800">
-            AI Engine: {run.ai_status}
+            AI analysis: {run.ai_status}
           </span>
-
-          {run.cache_hit && (
-            <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300 flex items-center gap-1">
-              <Zap className="w-3 h-3" /> Cache Hit
-            </span>
-          )}
         </div>
       </div>
 
@@ -125,7 +118,7 @@ export const EvidenceFindingsView: React.FC = () => {
         <div className="p-4 rounded-xl border border-brand-200/80 dark:border-brand-900/80 bg-brand-50/70 dark:bg-brand-950/30 text-xs text-brand-950 dark:text-brand-200 flex items-start gap-3">
           <Info className="w-4 h-4 text-brand-600 shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <p className="font-semibold">Deterministic Rule Evaluation Only</p>
+            <p className="font-semibold">AI analysis unavailable</p>
             <p className="text-slate-600 dark:text-brand-300 leading-relaxed">
               AI analysis was unavailable for this run. Review the recorded findings and evidence below; this result does not imply human approval.
             </p>
@@ -134,7 +127,7 @@ export const EvidenceFindingsView: React.FC = () => {
       )}
 
       {/* Overview Metric Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <Card className="p-3.5">
           <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
             Total Findings
@@ -146,13 +139,19 @@ export const EvidenceFindingsView: React.FC = () => {
 
         <Card className="p-3.5">
           <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
-            Evidence Chunks
+            Sources
           </span>
           <span className="text-xl font-bold tabular-nums text-slate-900 dark:text-white">
             {run.evidence.length}
           </span>
         </Card>
 
+
+      </div>
+
+      <details className="service-details">
+        <summary>Check details</summary>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Card className="p-3.5">
           <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
             AI Latency
@@ -170,7 +169,9 @@ export const EvidenceFindingsView: React.FC = () => {
             {run.model_id ? `${run.model_id}` : `p_ver:${run.prompt_version}`}
           </span>
         </Card>
-      </div>
+        </div>
+        <p className="mt-3 text-xs">{run.cache_hit ? 'Reused a matching previous analysis.' : 'New analysis.'}</p>
+      </details>
 
       {/* Findings & Evidence Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -287,10 +288,10 @@ export const EvidenceFindingsView: React.FC = () => {
                       </div>
                     )}
 
-                    {/* Cited Evidence Chunks */}
+                    {/* Cited Sources */}
                     {f.evidence_chunk_ids && f.evidence_chunk_ids.length > 0 && (
                       <div className="pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px]">
-                        <span className="text-slate-500 font-semibold">Cited Evidence Chunks: </span>
+                        <span className="text-slate-500 font-semibold">Cited Sources: </span>
                         <div className="inline-flex gap-1.5 flex-wrap mt-1">
                           {f.evidence_chunk_ids.map((chunkId) => (
                             <a
@@ -319,12 +320,12 @@ export const EvidenceFindingsView: React.FC = () => {
               <Layers className="w-4 h-4 text-brand-500" />
               Evidence Snapshot ({run.evidence.length})
             </h2>
-            <span className="text-[11px] text-slate-500">Immutable Excerpts</span>
+            <span className="text-[11px] text-slate-500">Saved excerpts</span>
           </div>
 
           {run.evidence.length === 0 ? (
             <Card className="p-8 text-center text-xs text-slate-500">
-              No evidence chunks cited for this run.
+              No supporting sources were cited for this check.
             </Card>
           ) : (
             <div className="space-y-3 max-h-[700px] overflow-y-auto p-1">

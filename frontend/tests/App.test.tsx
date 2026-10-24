@@ -55,7 +55,7 @@ describe('App Integration', () => {
       screen.getByText('On brand. Backed by evidence.')
     ).toBeInTheDocument();
     expect(
-      screen.getByText('Every claim verified. Every decision accountable.')
+      screen.getByText('Missing evidence is marked Needs Verification. Final decisions stay with people.')
     ).toBeInTheDocument();
 
     // Footer

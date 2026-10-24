@@ -25,7 +25,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ state }) => {
         className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
       >
         <span className="w-2 h-2 rounded-full bg-emerald-500" />
-        Connected (HTTP 200)
+        Available
       </span>
     );
   }
@@ -36,8 +36,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ state }) => {
     const label = isTimeout
       ? 'Request Timeout'
       : isMalformed
-      ? 'Malformed Response'
-      : 'Backend Unavailable';
+      ? 'Connection problem'
+      : 'Connection unavailable';
 
     return (
       <span

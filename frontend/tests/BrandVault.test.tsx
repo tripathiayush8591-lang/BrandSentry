@@ -124,7 +124,7 @@ describe('BrandVaultView', () => {
       </AuthContext.Provider>
     );
 
-    const searchTabButton = await screen.findByRole('button', { name: /Search FTS5/i });
+    const searchTabButton = await screen.findByRole('button', { name: /Search guidelines/i });
     fireEvent.click(searchTabButton);
 
     expect(screen.getByPlaceholderText(/Enter keywords or phrases/i)).toBeInTheDocument();

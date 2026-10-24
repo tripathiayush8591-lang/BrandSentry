@@ -146,7 +146,7 @@ describe('ContentStudioView and Runs Views', () => {
     expect(screen.getByText('Validation Runs')).toBeInTheDocument();
     await waitFor(() => {
       expect(screen.getByText(/vr_999/i)).toBeInTheDocument();
-      expect(screen.getByText('Deterministic Only')).toBeInTheDocument();
+      expect(screen.getByText('Rule checks only')).toBeInTheDocument();
       expect(screen.getAllByText('completed').length).toBeGreaterThanOrEqual(1);
     });
   });
@@ -162,7 +162,7 @@ describe('ContentStudioView and Runs Views', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Evidence & Findings')).toBeInTheDocument();
-      expect(screen.getByText('Deterministic Rule Evaluation Only')).toBeInTheDocument();
+      expect(screen.getByText('AI analysis unavailable')).toBeInTheDocument();
       expect(screen.getByText(/"unlimited free warranty"/i)).toBeInTheDocument();
       expect(screen.getByText('SUPPORTED')).toBeInTheDocument();
       expect(screen.getByText('Warranty Policy')).toBeInTheDocument();

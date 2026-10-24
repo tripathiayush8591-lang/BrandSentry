@@ -34,7 +34,7 @@ describe('Navigation and Header Components', () => {
     // Upcoming / disabled items (Phase 5)
     const approvalsItem = screen.getByText('Approvals').closest('[role="link"]');
     expect(approvalsItem).toHaveAttribute('aria-disabled', 'true');
-    expect(screen.getAllByText('Phase 5').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Soon').length).toBeGreaterThanOrEqual(1);
 
     const insightsItem = screen.getByText('Insights').closest('[role="link"]');
     expect(insightsItem).toHaveAttribute('aria-disabled', 'true');

@@ -16,11 +16,11 @@ export const NotFoundView: React.FC = () => {
           <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
             Error 404
           </span>
-          <h1 className="text-xl font-bold text-slate-900">
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white">
             Page Not Found
           </h1>
-          <p className="text-sm text-slate-600">
-            The requested path <code className="bg-slate-100 px-1.5 py-0.5 rounded font-mono text-slate-800 text-xs">{location.pathname}</code> does not exist or has not been implemented yet.
+          <p className="text-sm text-slate-600 dark:text-slate-300">
+            We couldn’t find <code className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded font-mono text-slate-800 dark:text-slate-200 text-xs">{location.pathname}</code>. Return to your workspace to continue.
           </p>
         </div>
         <div className="pt-2">

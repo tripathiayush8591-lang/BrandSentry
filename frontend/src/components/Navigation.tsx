@@ -60,7 +60,7 @@ export const Navigation: React.FC<NavigationProps> = ({
               key={item.id}
               role="link"
               aria-disabled="true"
-              title={`${item.label} (Upcoming in ${item.badge ?? 'future phases'})`}
+              title={`${item.label} (Coming soon)`}
               className={`flex items-center justify-between gap-2.5 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-500 dark:text-slate-400 bg-transparent cursor-not-allowed select-none ${
                 isHorizontal ? 'opacity-70' : 'w-full'
               }`}
@@ -71,7 +71,7 @@ export const Navigation: React.FC<NavigationProps> = ({
               </div>
               <span className="inline-flex items-center gap-1 text-[10px] font-semibold tracking-wider uppercase px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                 <Lock className="w-2.5 h-2.5" aria-hidden="true" />
-                {item.badge}
+                Soon
               </span>
             </div>
           );

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Shield, PlusCircle, LogOut, X, Sparkles } from 'lucide-react';
+import { PlusCircle, LogOut, X, Sparkles } from 'lucide-react';
 import { Navigation } from './Navigation';
 import { useAuth } from '../features/auth/auth-context';
 
@@ -34,15 +34,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
             className="flex items-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded-xl"
             aria-label="BrandSentry workspace navigation"
           >
-            <div className="w-9 h-9 rounded-xl bg-brand-600 text-white flex items-center justify-center shadow-sm">
-              <Shield className="w-5 h-5 text-white" aria-hidden="true" />
-            </div>
+            <img src="/images/brandsentry-icon.png" className="brand-icon" alt="" />
             <div className="flex flex-col">
-              <span className="font-display text-base tracking-tight text-slate-900 dark:text-white leading-tight">
+              <span className="brand-wordmark font-display text-base tracking-tight text-slate-900 dark:text-white leading-tight">
                 Brand<span className="text-brand-600 dark:text-brand-400">Sentry</span>
-              </span>
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                Brand Governance
               </span>
             </div>
           </Link>

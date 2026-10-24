@@ -35,10 +35,12 @@ test.afterAll(async () => {
 async function guest(page: Page) {
   await page.goto('/login');
   await page.getByRole('button', { name: 'Continue as Guest', exact: true }).click();
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('On brand. Backed by evidence.');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Your brand, in good hands.');
   await page.evaluate(() => document.fonts.ready);
-  await expect(page.getByTestId('state-connected')).toBeVisible();
-  await expect(page.getByRole('region', { name: 'Governance metrics overview' })).not.toContainText('—');
+  await expect(page.getByTestId('state-connected')).toBeAttached();
+  await expect(page.getByText('Connection details', { exact: true })).toBeVisible();
+  await expect(page.locator('details.service-details').first()).not.toHaveAttribute('open');
+  await expect(page.getByRole('region', { name: 'Workspace overview' })).not.toContainText('—');
 }
 
 async function fits(page: Page) {
@@ -59,7 +61,7 @@ test('LIVE_BACKEND: real guideline → rule → content → finding and evidence
     buffer: Buffer.from('Synthetic demo policy\n\nNever promise guaranteed outcomes. EcoBlend marketing must use evidence and avoid guaranteed results.'),
   });
   await page.getByLabel('Document Title (Optional)').fill('Synthetic EcoBlend policy');
-  await page.getByRole('button', { name: 'Upload & Ingest' }).click();
+  await page.getByRole('button', { name: 'Upload guideline' }).click();
   await page.getByRole('button', { name: 'Approve', exact: true }).click();
   await expect(page.getByRole('cell', { name: 'Approved', exact: true })).toBeVisible();
   await page.screenshot({ path: resolve(evidence, 'vault-light.png'), fullPage: true, animations: 'disabled' });
@@ -76,9 +78,9 @@ test('LIVE_BACKEND: real guideline → rule → content → finding and evidence
   await page.getByLabel('Campaign / Asset Title').fill('Synthetic EcoBlend campaign');
   await page.getByLabel('Marketing Copy / Proposed Content').fill('EcoBlend offers guaranteed outcomes and guaranteed results.');
   await page.screenshot({ path: resolve(evidence, 'studio-light.png'), fullPage: true, animations: 'disabled' });
-  await page.getByRole('button', { name: 'Run Validation', exact: true }).click();
+  await page.getByRole('button', { name: 'Check content', exact: true }).last().click();
   await expect(page.getByRole('heading', { name: 'Evidence & Findings', exact: true })).toBeVisible();
-  await expect(page.getByText('Deterministic Rule Evaluation Only', { exact: true })).toBeVisible();
+  await expect(page.getByText('AI analysis unavailable', { exact: true })).toBeVisible();
   await expect(page.getByText('Suggested Alternative Phrasing', { exact: true }).first()).toBeVisible();
   await expect(page.getByText('Synthetic EcoBlend policy', { exact: true }).first()).toBeVisible();
   await page.screenshot({ path: resolve(evidence, 'findings-light.png'), fullPage: true, animations: 'disabled' });
@@ -165,11 +167,11 @@ test('LIVE_BACKEND: keyboard theme persistence, live system changes, reduced mot
       };
       return [contrast(css.getPropertyValue('--color-text-primary'), css.getPropertyValue('--color-surface')),
         contrast(css.getPropertyValue('--color-text-muted'), css.getPropertyValue('--color-canvas')),
-        contrast('#ffffff', css.getPropertyValue('--color-accent'))];
+        contrast(css.getPropertyValue('--color-on-accent'), css.getPropertyValue('--color-accent'))];
     });
     ratios.forEach((ratio) => expect(ratio).toBeGreaterThanOrEqual(4.5));
   }
-  expect(await page.locator('main h1').evaluate((el) => getComputedStyle(el).fontFamily)).toContain('DynaPuff');
+  expect(await page.locator('.brand-wordmark').first().evaluate((el) => getComputedStyle(el).fontFamily)).toContain('ShineTypewriter');
   expect(await page.locator('main p').first().evaluate((el) => getComputedStyle(el).fontFamily)).toContain('Inter');
-  expect(await page.evaluate(() => document.fonts.check('16px Inter') && document.fonts.check('16px DynaPuff'))).toBe(true);
+  expect(await page.evaluate(() => document.fonts.check('16px Inter') && document.fonts.check('16px ShineTypewriter'))).toBe(true);
 });

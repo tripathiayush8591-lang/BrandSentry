@@ -15,7 +15,7 @@ export function LoginPage() {
   const disabled = pending !== null || status !== 'anonymous';
   return <main className="login-page" id="main-content">
     <section className="login-story" aria-labelledby="story-heading">
-      <div className="login-wordmark"><Shield aria-hidden="true" strokeWidth={2.5} /><span>BrandSentry</span></div>
+      <div className="login-wordmark"><img src="/images/brandsentry-icon.png" alt="" className="brand-icon" /><span>BrandSentry</span></div>
       <div className="story-copy">
         <h1 id="story-heading">Great brands<br /> are built on<br /> trust.</h1>
         <p>Create confidently. Publish responsibly.</p>
@@ -24,8 +24,8 @@ export function LoginPage() {
     </section>
     <section className="login-controls" aria-labelledby="welcome-heading">
       <div className="login-card">
-        <div className="login-emblem" aria-hidden="true"><Shield strokeWidth={2.5} /></div>
-        <h2 id="welcome-heading">Welcome to<br />BrandSentry</h2>
+        <div className="login-emblem" aria-hidden="true"><img src="/images/brandsentry-icon.png" alt="" /></div>
+        <h2 id="welcome-heading">Welcome to<br /><span className="brand-wordmark">BrandSentry</span></h2>
         <p className="login-subtitle">Your trusted workspace starts here.</p>
         <div className="login-actions" aria-busy={pending !== null || status === 'restoring'}>
           <button className="auth-button google-button" disabled={disabled} onClick={() => { void signIn('google'); }}>
@@ -41,7 +41,7 @@ export function LoginPage() {
         {notice && <p className="auth-feedback" role="status">{notice}</p>}
         {error && <div className="auth-feedback auth-error" role="alert">{error}</div>}
         {status === 'unavailable' && <button className="auth-retry" onClick={() => { void restore(); }}>Retry session check</button>}
-        <p className="guest-description" id="guest-description">Explore with a private, temporary demo workspace.<br />Guest access expires and is separate from your Google workspace.</p>
+        <p className="guest-description" id="guest-description">Try a private demo. Your guest workspace is temporary and separate from your Google account.</p>
       </div>
       <p className="login-footnote"><Shield size={13} aria-hidden="true" /> Thoughtful checks. Human decisions.</p>
     </section>

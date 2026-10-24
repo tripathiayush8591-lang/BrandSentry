@@ -73,12 +73,12 @@ const ApplicationShell: React.FC = () => {
       <footer className="workspace-footer border-t border-slate-200/80 dark:border-slate-800/80 py-6 mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
           <div>
-            <span className="font-semibold text-slate-700 dark:text-slate-200">BrandSentry</span> — AI-assisted pre-publication brand governance.
+            <span className="font-semibold text-slate-700 dark:text-slate-200">BrandSentry</span>
           </div>
           <div className="flex items-center gap-4 text-slate-500 dark:text-slate-400">
             <span>PROMPT PIRATES</span>
             <span>•</span>
-            <span>Phase 3: Brand Governance Suite</span>
+            <span>Thoughtful checks. Human decisions.</span>
           </div>
         </div>
       </footer>

@@ -131,7 +131,7 @@ export const BrandVaultView: React.FC = () => {
       const res = await brandApi.uploadDocument(uploadFile, uploadTitle, uploadType);
       setFeedback({
         type: 'success',
-        message: `Successfully ingested "${res.document.title}" (Version ${res.version.version}, ${res.chunk_count} chunks generated).`,
+        message: `Uploaded "${res.document.title}" (version ${res.version.version}).`,
       });
       setUploadFile(null);
       setUploadTitle('');
@@ -147,7 +147,7 @@ export const BrandVaultView: React.FC = () => {
     setFeedback(null);
     try {
       await brandApi.approveDocument(docId);
-      setFeedback({ type: 'success', message: `Approved "${title}". Its chunks are now active in the FTS5 search index.` });
+      setFeedback({ type: 'success', message: `Approved "${title}". It is now available for content checks.` });
       await loadDocuments();
     } catch (err) {
       setFeedback({ type: 'error', message: err instanceof Error ? err.message : 'Approval failed' });
@@ -255,12 +255,9 @@ export const BrandVaultView: React.FC = () => {
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               Brand Knowledge Vault
             </h1>
-            <span className="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800">
-              Phase 3A
-            </span>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Authoritative source repository for brand guidelines, deterministic rules, approved claims, and live lexical FTS5 retrieval.
+            Keep your guidelines, approved facts, and brand rules in one place.
           </p>
         </div>
 
@@ -312,7 +309,7 @@ export const BrandVaultView: React.FC = () => {
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            Search FTS5
+            Search guidelines
           </button>
         </div>
       </div>
@@ -401,7 +398,7 @@ export const BrandVaultView: React.FC = () => {
                   className="w-full py-2 px-3 neu-btn-primary text-xs flex items-center justify-center gap-1.5 shadow-sm"
                 >
                   {isUploading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-                  <span>{isUploading ? 'Ingesting...' : 'Upload & Ingest'}</span>
+                  <span>{isUploading ? 'Uploading…' : 'Upload guideline'}</span>
                 </button>
               </div>
             </form>
@@ -428,9 +425,9 @@ export const BrandVaultView: React.FC = () => {
             ) : documents.length === 0 ? (
               <div className="p-10 text-center space-y-2">
                 <Archive className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
-                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">No documents ingested yet</p>
+                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">No guidelines yet</p>
                 <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                  Upload a PDF or TXT brand guideline above to begin indexing content chunks into the retrieval engine.
+                  Upload a PDF or TXT guideline to start checking your content.
                 </p>
               </div>
             ) : (
@@ -565,7 +562,7 @@ export const BrandVaultView: React.FC = () => {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Deterministic rules are evaluated instantly during validation, functioning even when external AI providers are offline.
+              Set the words and claims your content should follow.
             </p>
             {isAdmin && (
               <button
@@ -583,10 +580,10 @@ export const BrandVaultView: React.FC = () => {
           {showNewRule && (
             <Card className="p-5 border-brand-200 dark:border-brand-900 animate-in fade-in">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3">
-                Create Deterministic Rule
+                Create brand rule
               </h3>
               <form onSubmit={handleCreateRule} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label htmlFor="rule-name" className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
                       Rule Name
@@ -714,7 +711,7 @@ export const BrandVaultView: React.FC = () => {
                 <Sliders className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
                 <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">No brand rules defined yet</p>
                 <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                  Click &quot;Add Brand Rule&quot; to configure deterministic term prohibitions and pattern checks.
+                  Add a rule for restricted terms or preferred wording.
                 </p>
               </div>
             ) : (
@@ -842,10 +839,10 @@ export const BrandVaultView: React.FC = () => {
         <div className="space-y-6">
           <Card className="p-5">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-2">
-              Lexical Knowledge Search (FTS5 BM25)
+              Search your guidelines
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
-              Query approved active knowledge chunks. Only approved documents in the active version are indexed.
+              Find passages from the current version of your approved guidelines.
             </p>
             <form
               onSubmit={(e) => {
@@ -897,7 +894,7 @@ export const BrandVaultView: React.FC = () => {
                     )}
                   </div>
                   <span className="text-[10px] font-mono text-slate-500">
-                    BM25 Score: {res.score.toFixed(3)}
+                    Match score: {res.score.toFixed(3)}
                   </span>
                 </div>
                 <p className="text-sm font-sans text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/40 p-2.5 rounded-lg whitespace-pre-wrap leading-relaxed">

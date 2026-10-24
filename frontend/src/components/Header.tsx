@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShieldCheck, Menu, X, Search } from 'lucide-react';
+import { Menu, X, Search } from 'lucide-react';
 import { Navigation } from './Navigation';
 import { StatusBadge } from './StatusBadge';
 import { ThemeToggle } from './ThemeToggle';
@@ -66,15 +66,10 @@ export const Header: React.FC<HeaderProps> = ({ connectionState }) => {
               className="flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded-xl p-1"
               aria-label="BrandSentry home"
             >
-              <div className="hidden sm:flex w-8 h-8 rounded-lg bg-brand-600 text-white items-center justify-center shadow-sm">
-                <ShieldCheck className="w-5 h-5 text-white" aria-hidden="true" />
-              </div>
+              <img src="/images/brandsentry-icon.png" className="brand-icon" alt="" />
               <div className="flex items-center gap-1.5">
                 <span className="brand-wordmark font-display tracking-tight text-slate-900 dark:text-white">
                   Brand<span className="text-brand-600 dark:text-brand-400">Sentry</span>
-                </span>
-                <span className="hidden lg:inline-block text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
-                  Governance
                 </span>
               </div>
             </Link>
@@ -118,7 +113,7 @@ export const Header: React.FC<HeaderProps> = ({ connectionState }) => {
           className="md:hidden border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-neu-surface-dark px-4 pt-3 pb-5 space-y-4 shadow-lg animate-in slide-in-from-top-2"
         >
           <div className="sm:hidden pb-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">System Status:</span>
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Connection:</span>
             <StatusBadge state={connectionState} />
           </div>
           <div>

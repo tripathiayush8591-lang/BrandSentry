@@ -201,7 +201,7 @@ describe('Authentication UI and server-owned session state', () => {
     expect(screen.getByRole('button', { name: 'Continue with Google' })).toHaveFocus();
     await userEvent.tab();
     expect(screen.getByRole('button', { name: 'Continue as Guest' })).toHaveFocus();
-    expect(screen.getByRole('button', { name: 'Continue as Guest' })).toHaveAccessibleDescription(/temporary demo workspace/);
+    expect(screen.getByRole('button', { name: 'Continue as Guest' })).toHaveAccessibleDescription(/guest workspace is temporary/);
   });
 
   it('does not persist credentials or authority in web storage', async () => {
