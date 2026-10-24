@@ -235,3 +235,34 @@ Frontend auth screens (Google + Continue as Guest), Firebase client config, `VIT
 - **Verdict: READY TO DEPLOY** conditional on the exact Git→Railway→Vercel procedure in `docs/PHASE_4C_RELEASE_REVIEW.md` §5 (substitute the Railway domain in vercel.json; volume `/data` before traffic; single instance; Firebase authorised domain; deployed incognito smoke + restart + backup/restore). LIVE_DEPLOYMENT evidence does not exist until that runs; no further live Gemini calls without new authorisation (4A allowance consumed).
 - Harness honesty notes: toy-proxy keep-alive needed `agent:false` (uvicorn 5s idle close); fresh diagnostic DB on first start only; `VITE_API_BASE_URL=` must be explicitly empty at build; `ENFORCE_PRODUCTION_STORAGE_PATHS=false` only for the Windows loopback diagnostic. All diagnostic artifacts under ignored `.data/phase4c/`.
 - Next action: user reviews this report; on explicit approval commit staged explicit paths, then execute the §5 deployment procedure and record evidence in runbook §9. Stopped after the final release review.
+# Approved frontend visual refresh — 2026-10-24
+
+- Implementation commit: `b4dcf30a4d62571408414820f790b4f86e7b550e`.
+  User approved the plan and replaced Superpop with their supplied
+  `ShineTypewriter.ttf`. No push or deployment performed.
+- Changed: `frontend/src/index.css`, `tailwind.config.js`, shared branding and
+  navigation/status components, login/session copy, overview bento layout,
+  Vault/Studio/Runs/Findings copy and disclosures, 404 dark-mode text,
+  `frontend/index.html`, supplied shield/font assets, existing UI/E2E assertions,
+  font provenance README and `frontend/ui-registry.md`.
+- API/data/auth/provider behavior unchanged. Dashboard diagnostics remain under
+  Connection details, with a visible retry message on failures. Analysis metadata
+  remains under details. All existing workflow actions, source links, versions,
+  evidence and explicit AI-unavailable/verification boundaries remain intact.
+- Verified real commands: frontend `npm run lint`, `npm run typecheck`,
+  `npm run build` all pass; `npm test` 77/77; `npm run test:e2e` 12/12.
+  Backend with Gemini key empty: `./.venv/Scripts/python.exe -m pytest -q`
+  196 passed / 1 Windows-platform skip; existing Starlette/httpx deprecation.
+- Coverage: MOCK external boundaries plus LIVE_BACKEND local SQLite/HTTP,
+  synthetic guideline→rule→content→finding/source flow, guest restart/expiry/
+  isolation/CSRF/logout, outage recovery, keyboard/theme/mobile checks to 320px.
+  No LIVE_PROVIDER Google/Gemini or LIVE_DEPLOYMENT tests in this change.
+- Evidence/review: `docs/UI_REFRESH_REVIEW.md`; local screenshots under
+  `frontend/evidence/phase3c-redesign/` and `frontend/evidence/phase2b/`.
+  No new live URLs. Original untracked evidence and pre-existing modified
+  `frontend/tsconfig.tsbuildinfo` left outside the implementation commit.
+- Remaining limit: supplied ShineTypewriter has no accompanying license
+  document; provenance is recorded, and no SIL license is claimed for it.
+  Next action: user visual review; release only with explicit push/deploy
+  authorisation and the existing deployment checklist.
+
