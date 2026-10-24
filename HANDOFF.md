@@ -298,3 +298,48 @@ Frontend auth screens (Google + Continue as Guest), Firebase client config, `VIT
   outside commits. Next action: user visual review; release remains separately
   authorised. P3: original transparent PNGs can be optimized for delivery later.
 
+## Phase 5A — human review backend — 2026-10-24
+
+- Backend code commit: `075222084e833b912a67fd296f22696bb795ce7e`;
+  base `f85436bb8aed95840416393f3258e85d7fc10aef`. User authorised this
+  backend slice; no frontend changes, live provider calls, push or deployment.
+- Added GET `/api/v1/validation-runs/{run_id}/review`, POST
+  `/api/v1/validation-runs/{run_id}/review/findings/{finding_id}`, POST
+  `/api/v1/validation-runs/{run_id}/review/decision`. Cookie auth, workspace
+  checks, admin/reviewer role, CSRF, required replay key and expected revision.
+- Migration `0006_human_review`: per-run `review_states` plus immutable
+  `review_decisions` serving as the audit ledger; actor/name/role/demo snapshot,
+  UTC timestamp and notes. SQLite writer lock + revision and unique constraints
+  prevent silent concurrent overwrite. Decision UPDATE/DELETE triggers and
+  restrictive FKs protect history; projection and audit commit atomically.
+- Accept means issue exists; reject dismisses with required justification;
+  flag stays unresolved. All findings must be accepted/rejected to finalize.
+  Approval requires complete validation and no accepted issues; partial runs
+  permit request changes. Final runs lock. New versions/runs start a separate
+  review; `is_current` prevents historical approvals applying to new content.
+- Real authors cannot self-review (including admins); isolated guest demo
+  self-review is explicitly labelled. Findings/evidence/verification/content
+  and existing submission validation statuses are never rewritten.
+- Final full backend suite: `$env:GEMINI_API_KEY=''; .venv/Scripts/python -m
+  pytest -q` **231 passed, 1 skipped**, 136.58s. Phase 5A suite **35 passed**.
+  Ruff check/format both pass, 78 files. Existing Windows/POSIX skip and
+  Starlette deprecation warning remain. Local TCP/uvicorn process-restart
+  smoke passed: session/review/receipt persistence, CSRF, private/no-store.
+- Coverage: LIVE_BACKEND local ASGI/SQLite/filesystem/TCP; MOCK provider and
+  verifier boundaries. LIVE_PROVIDER and LIVE_DEPLOYMENT unexercised, zero
+  live Gemini/Firebase requests. No public URLs. Owned temporary smoke backend
+  stopped and its files removed; frontend tests were outside backend-only scope.
+- Changed: backend review route/schema/service, router, models, migration,
+  35 tests; architecture/API contracts, Phase 5A task, completion report,
+  this handoff. No new dependencies or infrastructure.
+- Antigravity: read `docs/DATA_API_CONTRACTS.md` §12 and
+  `docs/PHASE_5A_COMPLETION_REPORT.md`. Render stored evidence from review GET,
+  send revision/key on writes, reuse identical keys only for exact retries,
+  reload on success/409, distinguish human state from machine status and
+  require `is_current` for a current approval. Provision a separate real
+  reviewer server-side; no invitation/role-management API was added.
+- Local review found no unresolved implementation blockers. Remaining work:
+  separately authorised frontend integration/browser tests and eventual
+  deployed incognito/persistent-volume smoke. Follow existing release backup
+  policy before migration; downgrading drops review history. Stopped at 5A.
+
