@@ -1,5 +1,13 @@
 # BrandSentry UI Pattern Registry (Phase 1B)
 
+## Read-only outage preview — 2026-10-25
+
+File: `src/features/preview/PreviewPage.tsx`. Reuses `Card` / `.neu-card`,
+`neu-btn-secondary`, `ThemeToggle`, existing light/dark canvas and text classes.
+Cards use `p-6 space-y-3`; page spacing uses `space-y-6 gap-6`. Headings use
+`text-3xl font-bold` and `text-xl font-semibold`. No new palette or font.
+Synthetic provenance and unvalidated/unreviewed states are always visible.
+
 ## Phase 5B human review — 2026-10-24
 
 Files: `src/features/runs/HumanReview.tsx`, `review.css`, `EvidenceFindingsView.tsx`.

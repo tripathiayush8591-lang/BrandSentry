@@ -15,6 +15,7 @@ import { LoginPage } from '../features/auth/LoginPage';
 import { ProtectedRoute } from '../features/auth/ProtectedRoute';
 import { SessionProfile } from '../features/auth/SessionProfile';
 import { ThemeProvider } from '../context/ThemeProvider';
+import { PreviewPage } from '../features/preview/PreviewPage';
 
 const ApplicationShell: React.FC = () => {
   const { connectionState, checkConnection, apiBaseUrl } = useBackendStatus();
@@ -104,6 +105,7 @@ export const App: React.FC = () => (
   <ThemeProvider>
     <AuthProvider>
       <Routes>
+        <Route path="/preview" element={<PreviewPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route element={<ProtectedRoute />}>
           <Route element={<ApplicationShell />}>

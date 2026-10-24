@@ -2,9 +2,11 @@ import { StatusResponse, ConnectionState, ApiErrorResponse } from '../types/api'
 
 /**
  * Resolves the API base URL from Vite environment variables.
- * Falls back to local development backend default.
+ * Production always uses the cookie-preserving same-origin Vercel proxy.
+ * Local development can target a configurable backend.
  */
 export function getApiBaseUrl(): string {
+  if (import.meta.env.PROD) return '';
   const envUrl = import.meta.env.VITE_API_BASE_URL;
   if (typeof envUrl === 'string') {
     return envUrl.trim().replace(/\/+$/, '');

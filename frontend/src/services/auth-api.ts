@@ -54,7 +54,7 @@ async function request(path: string, options: { method?: 'GET' | 'POST'; body?: 
       if (response.status === 401) throw new AuthError('Your session has ended. Please sign in again.', 401, id);
       if (response.status === 403) throw new AuthError('We couldn’t verify this request. Refresh the page and try again.', 403, id);
       if (response.status === 429) throw new AuthError('Too many sign-in attempts. Please wait a while before trying again.', 429, id);
-      if (response.status === 503) throw new AuthError('Sign-in is temporarily unavailable. Please try again shortly.', 503, id);
+      if ([502, 503, 504].includes(response.status)) throw new AuthError('Sign-in is temporarily unavailable. Please try again shortly or explore the read-only preview.', response.status, id);
       throw new AuthError('The server couldn’t complete your request. Please try again.', response.status, id);
     }
     if (response.status === 204) return undefined;

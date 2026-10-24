@@ -24,7 +24,7 @@ Official platform docs for verification:
 
 ## 2. Environment variable inventory — names, never values
 **Vercel frontend (build-time public configuration):**
-- `VITE_API_BASE_URL` — set to **empty string** with the same-origin proxy (unset falls back to loopback; never point it at Railway cross-origin anymore)
+- `VITE_API_BASE_URL` — production builds always use the same-origin proxy, including when this variable is missing or stale. Development can override the loopback default.
 - `VITE_FIREBASE_API_KEY`
 - `VITE_FIREBASE_AUTH_DOMAIN`
 - `VITE_FIREBASE_PROJECT_ID`
@@ -47,7 +47,7 @@ Official platform docs for verification:
 2. Deploy frontend skeleton on Vercel, set correct root `frontend/`, build `npm run build`, output `dist`; configure the SPA fallback rewrite for direct `/dashboard` navigation. Preview URL must load and deep-link refresh must succeed.
 3. Deploy backend skeleton on Railway from `backend/`. Startup binds `$PORT` and `/health` works via the public HTTPS domain; `/ready` checks DB connection and writable mounted directory.
 4. Attach Railway persistent volume mounted at `/data` **before** writing actual demo data. Volume is available at runtime, not build/predeploy time; initialise schema at a controlled runtime step. Keep single worker/instance.
-5. Set explicit CORS origins matching real Vercel URLs. Configure `VITE_API_BASE_URL` to the Railway **HTTPS** origin; rebuild frontend if build-time variables change.
+5. Set explicit allowed origins matching real Vercel URLs. Production frontend requests use relative `/api` URLs through `frontend/vercel.json`; do not configure the browser to call Railway cross-origin.
 6. Call `/health` and `/ready` from incognito; then invoke backend through actual deployed frontend and inspect browser Network tab for CORS, 401, 404 and mixed-content failures.
 7. Configure Google provider and Firebase authorised domains; test Google popup sign-in **on deployed origin**, send ID token to backend, verify role mapping and logout/expired token handling.
 8. Configure isolated guest session endpoint; test without Firebase login, token expiration, and separation from real workspaces.

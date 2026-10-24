@@ -10,6 +10,14 @@ afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); document.cookie = '
 function response(status = 200, body: unknown = demoSession()) { return new Response(status === 204 ? null : JSON.stringify(body), { status }); }
 
 describe('Cookie session API contract', () => {
+  it.each([undefined, '', 'http://127.0.0.1:8000', 'https://example.test'])('uses the same-origin production proxy regardless of API env %s', async (base) => {
+    vi.stubEnv('PROD', true);
+    vi.stubEnv('VITE_API_BASE_URL', base);
+    expect(getApiBaseUrl()).toBe('');
+    fetchMock.mockResolvedValue(response());
+    await authApi.me();
+    expect(fetchMock).toHaveBeenCalledWith('/api/v1/auth/me', expect.objectContaining({ credentials: 'include', cache: 'no-store' }));
+  });
   it('interprets timezone-less Phase 2A SQLite timestamps as UTC', () => {
     expect(sessionExpiryMs('2026-10-24T04:00:00.000000')).toBe(Date.parse('2026-10-24T04:00:00Z'));
     expect(sessionExpiryMs('2026-10-24T09:30:00+05:30')).toBe(Date.parse('2026-10-24T04:00:00Z'));
@@ -42,7 +50,7 @@ describe('Cookie session API contract', () => {
     expect(fetchMock.mock.calls[0][0]).toBe('/api/v1/auth/me');
     vi.stubEnv('VITE_API_BASE_URL', 'https://example.test/proxy/'); expect(getApiBaseUrl()).toBe('https://example.test/proxy');
   });
-  it.each([401, 403, 429, 500, 503])('handles HTTP %s without disclosing raw errors', async (status) => {
+  it.each([401, 403, 429, 500, 502, 503, 504])('handles HTTP %s without disclosing raw errors', async (status) => {
     fetchMock.mockResolvedValue(response(status, { error: { message: 'RAW PRIVATE ERROR' } }));
     try { await authApi.me(); throw new Error('Expected rejection'); }
     catch (error) { expect(error).toBeInstanceOf(AuthError); expect((error as AuthError).status).toBe(status); expect((error as Error).message).not.toContain('RAW'); }

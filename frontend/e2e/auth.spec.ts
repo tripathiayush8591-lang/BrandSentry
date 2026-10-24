@@ -118,7 +118,7 @@ test('LIVE_BACKEND: outage blocks restoration and recovery retains the real iden
   await enterGuest(page); await stopBackend();
   try {
     await page.reload();
-    await expect(page.getByRole('heading', { name: 'We couldn’t check your session' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Welcome to BrandSentry' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Sign out', exact: true })).toHaveCount(0);
   } finally { await startBackend(); }
   await page.getByRole('button', { name: 'Retry session check', exact: true }).click();

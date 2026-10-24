@@ -8,7 +8,7 @@ Phase 2B adds `/login`, backend-session restoration, protected routes, Google po
 
 Copy `.env.example` to ignored `.env.local` and set the four `VITE_FIREBASE_*` public web configuration values for `brandsentry-68d05`. Never include Firebase Admin credentials in frontend variables. The implementation uses Firebase's modular SDK and in-memory persistence; it clears the transient Firebase identity after exchange and never treats it as application authority.
 
-`VITE_API_BASE_URL` is the API base before `/api/v1`. Use matching hostnames locally, e.g. frontend `http://127.0.0.1:5173` and backend `http://127.0.0.1:8000`. An explicitly empty base produces relative requests for a future same-origin proxy. That production proxy is not implemented in this phase.
+`VITE_API_BASE_URL` is the development API base before `/api/v1`. Use matching hostnames locally, e.g. frontend `http://127.0.0.1:5173` and backend `http://127.0.0.1:8000`. Production builds always use relative requests through the cookie-preserving Railway rewrite in `vercel.json`, regardless of missing or stale API environment values.
 
 Both sign-in endpoints and `/auth/me` use `credentials: include`. The backend sets the HttpOnly session cookie and companion CSRF cookie. Authenticated mutations echo the session-bound CSRF value from memory or the readable cookie as `X-CSRF-Token`; initial sign-ins use the backend's Origin check and include CSRF when available. No session credentials are stored in localStorage/sessionStorage. `/auth/me` owns restoration and access state. SQLite-loaded timestamps without a timezone are interpreted as UTC for scheduling only; the browser clock does not override server authentication.
 
@@ -114,4 +114,5 @@ npm run preview
 - Framework: Vite
 - Build Command: `npm run build`
 - Output Directory: `dist`
-- Environment Variables: `VITE_API_BASE_URL` (configured to Railway backend URL)
+- API requests: same-origin `/api` proxy; `VITE_API_BASE_URL` is ignored in production.
+- `/preview`: public read-only synthetic examples, available during backend outages; grants no authenticated access.
