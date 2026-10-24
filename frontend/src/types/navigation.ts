@@ -48,8 +48,7 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     id: 'insights',
     label: 'Insights',
     href: '/insights',
-    status: 'upcoming',
-    badge: 'Phase 5',
-    description: 'Policy trigger frequencies & audit records',
+    status: 'active',
+    description: 'Recorded validation findings & human review counts',
   },
 ];

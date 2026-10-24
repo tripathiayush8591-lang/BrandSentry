@@ -1,0 +1,23 @@
+.review-panel, .finding-review { color: var(--color-text-primary); font-size: 13px; line-height: 1.65; overflow-wrap: anywhere; }
+.review-panel h2, .finding-review h3, .review-dialog h2 { font-size: 15px; font-weight: 650; }
+.review-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.review-muted { color: var(--color-text-secondary); font-size: 12px; }
+.review-status { padding: 4px 12px; border: 1px solid var(--color-border); border-radius: 999px; font-size: 12px; }
+.review-callout { padding: 10px 12px; border-left: 3px solid var(--color-accent); background: var(--color-canvas); border-radius: 4px; }
+.review-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.review-actions button { min-height: 44px; padding: 9px 12px; font-size: 12px; }
+.review-actions button:disabled, .finding-review fieldset:disabled button { opacity: .55; cursor: not-allowed; }
+.review-panel label, .finding-review label { display: block; font-size: 12px; font-weight: 600; }
+.review-panel textarea, .finding-review textarea { display: block; width: 100%; resize: vertical; min-height: 70px; padding: 10px; }
+.finding-review { border-top: 1px solid var(--color-border); padding-top: 14px; }
+.finding-review legend { margin: 6px 0 10px; }
+.review-attribution { margin: 6px 0 10px; font-size: 12px; }
+.review-content { white-space: pre-wrap; overflow-wrap: anywhere; }
+.review-id { overflow-wrap: anywhere; font-size: 11px; }
+.review-blockers { list-style: disc; padding-left: 18px; }
+.review-history { list-style: none; padding: 0; }
+.review-history li + li { border-top: 1px solid var(--color-border); padding-top: 14px; margin-top: 14px; }
+.review-dialog { background: var(--color-surface); color: var(--color-text-primary); border: 1px solid var(--color-border); border-radius: 20px; padding: 24px; width: min(520px, calc(100% - 32px)); max-height: calc(100svh - 32px); overflow-y: auto; }
+.review-dialog > * + * { margin-top: 14px; }
+.review-dialog::backdrop { background: #0009; }
+@media (max-width: 480px) { .review-actions { flex-direction: column; } .review-actions button { width: 100%; } }

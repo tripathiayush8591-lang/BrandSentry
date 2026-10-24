@@ -36,8 +36,7 @@ describe('Navigation and Header Components', () => {
     expect(approvalsItem).toHaveAttribute('aria-disabled', 'true');
     expect(screen.getAllByText('Soon').length).toBeGreaterThanOrEqual(1);
 
-    const insightsItem = screen.getByText('Insights').closest('[role="link"]');
-    expect(insightsItem).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('link', { name: /Insights/ })).toHaveAttribute('href', '/insights');
   });
 
   it('renders mobile menu toggle and opens/closes drawer on mobile viewport', () => {

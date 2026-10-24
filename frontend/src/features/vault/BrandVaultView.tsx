@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Card } from '../../components/Card';
 import { brandApi } from '../../services/brand-api';
@@ -40,6 +40,7 @@ export const BrandVaultView: React.FC = () => {
   const [documents, setDocuments] = useState<KnowledgeDocument[]>([]);
   const [loadingDocs, setLoadingDocs] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
   const [uploadTitle, setUploadTitle] = useState('');
   const [uploadType, setUploadType] = useState<DocumentType>('guidelines');
   const [isUploading, setIsUploading] = useState(false);
@@ -134,6 +135,7 @@ export const BrandVaultView: React.FC = () => {
         message: `Uploaded "${res.document.title}" (version ${res.version.version}).`,
       });
       setUploadFile(null);
+      if (fileInput.current) fileInput.current.value = '';
       setUploadTitle('');
       await loadDocuments();
     } catch (err) {
@@ -352,6 +354,7 @@ export const BrandVaultView: React.FC = () => {
                   File (PDF or UTF-8 TXT, max 5MB)
                 </label>
                 <input id="vault-file"
+                  ref={fileInput}
                   type="file"
                   accept=".pdf,.txt,text/plain,application/pdf"
                   required

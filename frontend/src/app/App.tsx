@@ -7,6 +7,7 @@ import { BrandVaultView } from '../features/vault/BrandVaultView';
 import { ContentStudioView } from '../features/studio/ContentStudioView';
 import { ValidationRunsView } from '../features/runs/ValidationRunsView';
 import { EvidenceFindingsView } from '../features/runs/EvidenceFindingsView';
+import { InsightsView } from '../features/insights/InsightsView';
 import { NotFoundView } from '../features/not-found/NotFoundView';
 import { useBackendStatus } from '../hooks/useBackendStatus';
 import { AuthProvider } from '../features/auth/AuthProvider';
@@ -111,6 +112,7 @@ export const App: React.FC = () => (
             <Route path="/studio" element={<ContentStudioView />} />
             <Route path="/studio/:submissionId" element={<ContentStudioView />} />
             <Route path="/runs" element={<ValidationRunsView />} />
+            <Route path="/insights" element={<InsightsView />} />
             <Route path="/runs/:runId" element={<EvidenceFindingsView />} />
             <Route path="*" element={<NotFoundView />} />
           </Route>

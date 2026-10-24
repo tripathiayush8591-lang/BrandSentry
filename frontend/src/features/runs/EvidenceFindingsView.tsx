@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card } from '../../components/Card';
-import { brandApi } from '../../services/brand-api';
-import type { ValidationRun } from '../../types/validation';
+import { useHumanReview } from './useHumanReview';
+import { ExportReport } from './ExportReport';
+import { ReviewSummary, FindingReview, FinalReview } from './HumanReview';
 import {
   ShieldAlert,
   ArrowLeft,
@@ -16,27 +17,16 @@ import {
 
 export const EvidenceFindingsView: React.FC = () => {
   const { runId } = useParams<{ runId: string }>();
-  const [run, setRun] = useState<ValidationRun | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  return <ReviewRun key={runId} runId={runId ?? ''} />;
+};
+
+function ReviewRun({ runId }: { runId: string }) {
+  const controller = useHumanReview(runId);
+  const { review, loading, error } = controller;
+  const run = review?.run;
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [highlightedChunkId, setHighlightedChunkId] = useState<string | null>(null);
   const [copyError, setCopyError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!runId) return;
-    setLoading(true);
-    brandApi
-      .getValidationRun(runId)
-      .then((data) => {
-        setRun(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err instanceof Error ? err.message : 'Failed to load validation run');
-        setLoading(false);
-      });
-  }, [runId]);
 
   const handleCopy = async (text: string) => {
     setCopyError(null);
@@ -58,12 +48,13 @@ export const EvidenceFindingsView: React.FC = () => {
     );
   }
 
-  if (error || !run) {
+  if (!review || !run) {
     return (
       <div className="py-16 text-center space-y-4 max-w-md mx-auto">
         <ShieldAlert className="w-10 h-10 text-rose-500 mx-auto" />
-        <h2 className="text-lg font-bold text-slate-900 dark:text-white">Validation Run Not Found</h2>
-        <p className="text-xs text-slate-500">{error ?? 'Unable to find the specified validation run.'}</p>
+        <h2 className="text-lg font-bold text-slate-900 dark:text-white">Review unavailable</h2>
+        <p role="alert" className="text-xs text-slate-500">{error ?? 'Unable to find the specified validation run.'}</p>
+        <button className="neu-btn-secondary px-4 py-2" disabled={controller.busy} onClick={() => void controller.reload()}>Retry loading review</button>
         <Link to="/runs" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl neu-btn-primary text-xs">
           <ArrowLeft className="w-3.5 h-3.5" /> Return to Validation Runs
         </Link>
@@ -72,9 +63,10 @@ export const EvidenceFindingsView: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto" aria-busy={controller.busy}>
       {copyError && <p role="alert" className="text-sm text-rose-700 dark:text-rose-300">{copyError}</p>}
       <span role="status" className="sr-only">{copiedText ? 'Replacement copied to clipboard.' : ''}</span>
+      <ExportReport runId={runId} />
       {/* Back link & Title */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -112,6 +104,8 @@ export const EvidenceFindingsView: React.FC = () => {
           </span>
         </div>
       </div>
+
+      <ReviewSummary controller={controller} />
 
       {/* Honest AI provider transparency callout */}
       {run.ai_status === 'unavailable' && (
@@ -202,6 +196,7 @@ export const EvidenceFindingsView: React.FC = () => {
 
                 return (
                   <Card key={f.id ?? idx} className="p-5 space-y-3.5">
+                    <p className="text-xs font-semibold">Original {f.source === 'ai' ? 'AI assessment' : 'deterministic assessment'} · Finding {idx + 1}</p>
                     {/* Header: Severity & Verification Status */}
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-2">
@@ -306,6 +301,9 @@ export const EvidenceFindingsView: React.FC = () => {
                         </div>
                       </div>
                     )}
+                    {f.evidence_chunk_ids.length === 0 && <p className="text-xs text-slate-500">No evidence cited. Human judgment does not verify missing sources.</p>}
+                    {f.evidence_chunk_ids.some((id) => !run.evidence.some((ev) => ev.chunk_id === id)) && <p className="text-xs text-slate-500">A cited snapshot is unavailable. Source verification remains unchanged.</p>}
+                    <FindingReview findingId={f.id} index={idx} review={review} disabled={!controller.canReview} onDecide={controller.decide} />
                   </Card>
                 );
               })}
@@ -369,6 +367,7 @@ export const EvidenceFindingsView: React.FC = () => {
           )}
         </div>
       </div>
+      <FinalReview controller={controller} />
     </div>
   );
-};
+}

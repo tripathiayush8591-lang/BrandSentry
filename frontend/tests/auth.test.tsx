@@ -16,6 +16,12 @@ vi.mock('../src/services/firebase-auth', async (original) => ({
   googleIdToken: vi.fn(), clearGoogleIdentity: vi.fn(), googleConfigurationAvailable: vi.fn(),
 }));
 vi.mock('../src/hooks/useBackendStatus', () => ({ useBackendStatus: () => ({ connectionState: { status: 'checking' }, checkConnection: vi.fn(), apiBaseUrl: 'http://127.0.0.1:8001' }) }));
+vi.mock('../src/services/brand-api', async (original) => ({ brandApi: {
+  ...(await original<typeof import('../src/services/brand-api')>()).brandApi,
+  listDocuments: vi.fn().mockResolvedValue([]),
+  listRules: vi.fn().mockResolvedValue([]),
+  listClaims: vi.fn().mockResolvedValue([]),
+} }));
 
 const noSession = () => new AuthError('Your session has ended. Please sign in again.', 401);
 const me = vi.mocked(authApi.me);
@@ -33,6 +39,47 @@ beforeEach(() => {
 afterEach(() => { vi.useRealTimers(); document.cookie = 'brandsentry_session-csrf=; max-age=0; path=/'; });
 
 describe('Authentication UI and server-owned session state', () => {
+  it('retains the selected upload and draft title while focus rechecks the same session', async () => {
+    me.mockResolvedValue(demoSession());
+    mount('/vault');
+    const input = await screen.findByLabelText('File (PDF or UTF-8 TXT, max 5MB)') as HTMLInputElement;
+    const file = new File(['Synthetic policy'], 'policy.txt', { type: 'text/plain' });
+    await userEvent.upload(input, file);
+    await userEvent.type(screen.getByLabelText('Document Title (Optional)'), 'Unsent title');
+    let finish!: (value: ReturnType<typeof demoSession>) => void;
+    me.mockReturnValueOnce(new Promise((resolve) => { finish = resolve; }));
+    await act(async () => { fireEvent(window, new Event('focus')); });
+    expect(screen.getByLabelText('File (PDF or UTF-8 TXT, max 5MB)')).toBe(input);
+    expect(input.files?.[0]).toBe(file);
+    await act(async () => { finish(demoSession()); });
+    expect(screen.getByLabelText('File (PDF or UTF-8 TXT, max 5MB)')).toBe(input);
+    expect(input.files?.[0]).toBe(file);
+    expect(screen.getByLabelText('Document Title (Optional)')).toHaveValue('Unsent title');
+    expect(screen.getByRole('button', { name: 'Upload guideline' })).toBeEnabled();
+  });
+
+  it('clears the upload when a focus recheck resolves to a different workspace', async () => {
+    me.mockResolvedValue(demoSession()); mount('/vault');
+    const input = await screen.findByLabelText('File (PDF or UTF-8 TXT, max 5MB)');
+    await userEvent.upload(input, new File(['Synthetic'], 'policy.txt', { type: 'text/plain' }));
+    const other = demoSession(); other.workspace.id = 'other-workspace';
+    me.mockResolvedValue(other);
+    await act(async () => { fireEvent(window, new Event('focus')); });
+    const changed = screen.getByLabelText('File (PDF or UTF-8 TXT, max 5MB)') as HTMLInputElement;
+    expect(changed).not.toBe(input);
+    expect(changed.files).toHaveLength(0);
+    expect(screen.getByRole('button', { name: 'Upload guideline' })).toBeDisabled();
+  });
+
+  it('blocks the upload if a focus recheck cannot verify the existing session', async () => {
+    me.mockResolvedValue(demoSession()); mount('/vault');
+    await screen.findByLabelText('File (PDF or UTF-8 TXT, max 5MB)');
+    me.mockRejectedValue(new AuthError('Network unavailable'));
+    await act(async () => { fireEvent(window, new Event('focus')); });
+    expect(await screen.findByRole('alert')).toHaveTextContent('Network unavailable');
+    expect(screen.queryByLabelText('File (PDF or UTF-8 TXT, max 5MB)')).not.toBeInTheDocument();
+  });
+
   it('redirects protected navigation to login with Google and guest controls only', async () => {
     mount('/vault');
     expect(await screen.findByRole('button', { name: 'Continue with Google' })).toBeEnabled();

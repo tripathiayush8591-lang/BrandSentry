@@ -1,5 +1,7 @@
 import { getApiBaseUrl } from './api';
 import { readCsrfCookie } from './auth-api';
+import type { InsightsSummary } from '../types/insights';
+import type { ReviewDetail, ReviewDecision, FindingDecisionRequest, FinalDecisionRequest } from '../types/review';
 import type {
   KnowledgeDocument,
   KnowledgeDocumentDetail,
@@ -69,6 +71,26 @@ async function handleResponse<T>(response: Response): Promise<T> {
 }
 
 export const brandApi = {
+  async getInsights(): Promise<InsightsSummary> {
+    const res = await fetch(`${getApiBaseUrl()}/api/v1/insights/summary`, {
+      credentials: 'include', cache: 'no-store', headers: { Accept: 'application/json' },
+    });
+    return handleResponse<InsightsSummary>(res);
+  },
+  async getReview(runId: string): Promise<ReviewDetail> {
+    const res = await fetch(`${getApiBaseUrl()}/api/v1/validation-runs/${encodeURIComponent(runId)}/review`, {
+      credentials: 'include', cache: 'no-store', headers: { Accept: 'application/json' },
+    });
+    return handleResponse<ReviewDetail>(res);
+  },
+
+  async reviewFinding(runId: string, findingId: string, body: FindingDecisionRequest, key: string, csrf?: string): Promise<ReviewDecision> {
+    return postReview(`${encodeURIComponent(runId)}/review/findings/${encodeURIComponent(findingId)}`, body, key, csrf);
+  },
+
+  async finalizeReview(runId: string, body: FinalDecisionRequest, key: string, csrf?: string): Promise<ReviewDecision> {
+    return postReview(`${encodeURIComponent(runId)}/review/decision`, body, key, csrf);
+  },
   // --- Brand Knowledge Vault ---
   async listDocuments(): Promise<KnowledgeDocument[]> {
     const res = await fetch(`${getApiBaseUrl()}/api/v1/knowledge/documents`, {
@@ -317,3 +339,18 @@ export const brandApi = {
     return handleResponse<ValidationRun>(res);
   },
 };
+
+async function postReview(path: string, body: FindingDecisionRequest | FinalDecisionRequest, key: string, csrf?: string): Promise<ReviewDecision> {
+  const token = csrf || readCsrfCookie();
+  if (!token) throw new BrandApiError('Session protection is unavailable. Refresh your session before reviewing.', 403);
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), 15000);
+  try {
+    const res = await fetch(`${getApiBaseUrl()}/api/v1/validation-runs/${path}`, {
+      method: 'POST', credentials: 'include', cache: 'no-store', signal: controller.signal,
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-Token': token, 'Idempotency-Key': key },
+      body: JSON.stringify(body),
+    });
+    return await handleResponse<ReviewDecision>(res);
+  } finally { window.clearTimeout(timer); }
+}

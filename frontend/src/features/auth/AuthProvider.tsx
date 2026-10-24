@@ -26,7 +26,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const restore = useCallback(async () => {
     if (busy.current) return;
     const version = ++revision.current;
-    setStatus('restoring');
+    // Returning from the native file picker focuses the window. Rechecking a
+    // known session must not unmount protected forms and discard their files.
+    // Initial restoration still blocks rendering; any failure below blocks it.
+    if (!current.current) setStatus('restoring');
     setError(null);
     try {
       const value = await authApi.me();

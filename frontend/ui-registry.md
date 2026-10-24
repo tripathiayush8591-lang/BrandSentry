@@ -1,5 +1,29 @@
 # BrandSentry UI Pattern Registry (Phase 1B)
 
+## Phase 5B human review — 2026-10-24
+
+Files: `src/features/runs/HumanReview.tsx`, `review.css`, `EvidenceFindingsView.tsx`.
+Extends the current product baseline below; no palette, typography, shell or
+navigation redesign. The task's older Raspberry/DynaPuff description was treated
+as a request to preserve identity, using the actual current theme tokens.
+
+| Property | Review pattern |
+| --- | --- |
+| Container | Existing `Card` / `.neu-card`, `p-5`, `space-y-3` |
+| Background / border | `--color-surface`, `--color-canvas`, `--color-border`; no new brand colours |
+| Type | Existing Inter; review body 13px/1.65, headings 15px/650, notes/meta 12px |
+| Text | `--color-text-primary`, secondary `--color-text-secondary` |
+| Actions | Existing `.neu-btn-primary` / `.neu-btn-secondary`; minimum 44px targets, 8px gaps, wrap then stack on mobile |
+| Human boundary | Thin token border above each human-judgment section; machine labels and stored snapshots retained verbatim |
+| Status | Textual human state, revision, resolved/unresolved count; historical prefix for non-current runs |
+| Notices | Canvas background, 3px accent left border; words explain permission, demo identity, conflicts and recovery |
+| Inputs | Existing `.neu-input`, labelled notes with 2000-character bound; rejection requires nonblank rationale |
+| Confirmation | Native modal dialog with token surface/border, 20px radius, 24px padding; Cancel receives initial focus, Escape dismisses, focus returns |
+| History | Revision order, separators, actor name/ID/role, local timestamp from offset-qualified UTC, preserved notes and explicit demo attribution |
+
+Status and judgment never replace source verification. Use original snapshot text,
+never fresh live-source text. No approval authority or credentials in web storage.
+
 > Generated for pattern consistency across subsequent engineering phases.
 > Style philosophy: Clean, accessible, credible B2B SaaS interface. Flexible design tokens, not a rigid cosmetic lock-in.
 
@@ -85,3 +109,23 @@ Decorative artwork is a generated raster, never an authentication status or evid
 
 ### Interactive Buttons
 - Secondary action / Retry: `inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 hover:border-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm`.
+
+### Governance insights and report export — 2026-10-24
+
+Files: `src/features/insights/InsightsView.tsx`, `src/features/runs/ExportReport.tsx`.
+
+| Property | Pattern |
+| --- | --- |
+| Background / border / radius / shadow | Existing `Card` / `.neu-card` theme tokens; no new surface styles |
+| Headings | `text-2xl font-bold` page title; `text-lg font-semibold` card headings |
+| Supporting text | `text-sm text-slate-600 dark:text-slate-400`, existing editorial overrides |
+| Spacing | `space-y-6` sections; `p-6 space-y-3` cards; `gap-4` label/count rows |
+| Counts | Semantic `dl`, `font-semibold tabular-nums`; recorded category/status rows use lists |
+| Actions | Existing `neu-btn-secondary px-4 py-2`, inherited hover/focus, disabled while loading/exporting |
+| Feedback | Text loading `role=status`; errors/denial `role=alert`; explicit refresh retry |
+
+Counts remain separate by machine origin and verification status. Human outcomes
+are in their own card. All-history scope and demo disclosure stay visible; category
+card is omitted when absent. No charts, fixed palette or dashboard rearrangement.
+Report export appears in existing run detail; JSON preserves server snapshots and
+does not render content as HTML. Desktop/mobile captures inspected in both themes.

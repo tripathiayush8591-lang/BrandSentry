@@ -50,7 +50,7 @@ export const ValidationRunsView: React.FC = () => {
             </h1>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Revisit your content checks, findings, and sources.
+            Revisit content checks, inspect evidence, and open human review for an exact version.
           </p>
         </div>
 
@@ -199,7 +199,7 @@ export const ValidationRunsView: React.FC = () => {
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       <Link to={`/runs/${run.id}`} aria-label={`Inspect run ${run.id}`} className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline min-h-10">
-                        Inspect <ArrowRight className="w-3.5 h-3.5" />
+                        Inspect & review <ArrowRight className="w-3.5 h-3.5" />
                       </Link>
                     </td>
                   </tr>

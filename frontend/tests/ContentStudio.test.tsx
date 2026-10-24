@@ -6,6 +6,7 @@ import { ValidationRunsView } from '../src/features/runs/ValidationRunsView';
 import { EvidenceFindingsView } from '../src/features/runs/EvidenceFindingsView';
 import { AuthContext } from '../src/features/auth/auth-context';
 import { demoSession } from './auth-fixtures';
+import { brandApi } from '../src/services/brand-api';
 
 vi.mock('../src/services/brand-api', () => ({
   brandApi: {
@@ -152,12 +153,18 @@ describe('ContentStudioView and Runs Views', () => {
   });
 
   it('renders EvidenceFindingsView showing transparent provider state and findings', async () => {
+    Object.assign(brandApi, {
+      getReview: vi.fn().mockResolvedValue({ run: await brandApi.getValidationRun('vr_999'), content_text: 'Synthetic warranty copy', revision: 0, status: 'pending', is_current: true, is_demo: true, unresolved_finding_ids: ['f_1'], accepted_finding_ids: [], approval_blockers: ['incomplete_validation', 'unresolved_findings'], decisions: [] }),
+      getSubmission: vi.fn().mockResolvedValue({ created_by: 'usr_1', versions: [] }),
+    });
     render(
+      <AuthContext.Provider value={mockAuthState}>
       <MemoryRouter initialEntries={['/runs/vr_999']}>
         <Routes>
           <Route path="/runs/:runId" element={<EvidenceFindingsView />} />
         </Routes>
       </MemoryRouter>
+      </AuthContext.Provider>
     );
 
     await waitFor(() => {
