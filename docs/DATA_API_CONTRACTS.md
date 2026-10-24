@@ -235,7 +235,7 @@ idempotency records and a provider-usage ledger are implemented as
 `0004_validation`). Naming follows the §2 proposal with the same
 knowledge-vault style used in §9; semantics (immutable versions,
 workspace scoping, auditability) are unchanged. Review-side entities
-(`review_decisions`, `audit_events`) remain future work.
+(`review_decisions`, `audit_events`) are implemented together in Phase 5A (§12).
 
 **Run state machine.** `validation_runs.state` is
 `pending → running → completed | partial | failed`; `failed` is also
@@ -382,3 +382,129 @@ No JSON schema changes; additive operational guarantees only.
 - **Duplicate submission titles**: creating a submission whose
   `(workspace_id, title)` already exists now returns a stable
   `409 CONFLICT` instead of an unhandled 500.
+
+## 12. Phase 5A human review (implemented 2026-10-24)
+
+This section supersedes the proposed review endpoints/state projection in
+§3–4 for this minimal backend slice. No submit-review, assignment, queue,
+persona-switching or insights endpoint is introduced. Existing submissions
+and runs lists identify candidates; existing validation JSON is unchanged.
+
+### Data and policy
+
+Migration `0006_human_review` adds `review_states` (one row per run,
+monotonic `revision`, nullable `final_decision`) and `review_decisions`
+(append-only decisions **also serving as the audit events**). Each event
+stores its run, optional finding, workspace, actor ID/name/role snapshot,
+`is_demo`, UTC timestamp, decision, notes, revision, idempotency key and
+request digest. Run links bind the event to the immutable submission and
+content version. Unique constraints protect run/revision and
+workspace/actor/key. Foreign keys retain referenced records; SQLite
+triggers reject UPDATE/DELETE of decision events. There is no edit/delete
+decision API. State and event commit in one transaction.
+
+Review does not modify submission text, validation status, AI findings,
+severity/confidence, verification status, evidence references/snapshots,
+provider usage or cache. It does not call Gemini. Human approval and machine
+verification remain separate facts. Submission `status` still means
+`draft|validated|partial|failed`; consumers must read review detail for human
+status and **must check `is_current` before presenting a current approval**.
+
+Read permission is any authenticated workspace member. Writes require a
+current server-side `admin` or `reviewer` membership and valid CSRF. In real
+workspaces both the submission author and exact-version author are barred
+from review writes, including admins. A guest in its isolated demo workspace
+may review its own synthetic submission with its actual server-issued actor
+identity/role; responses and events explicitly say `is_demo: true`. This
+is labelled demo self-review, not secure multi-person approval or a fabricated
+reviewer persona. Role provisioning remains server-side; no public API is
+added for inviting or promoting reviewers.
+
+### Minimal API
+
+All paths below are under `/api/v1`; cookie authentication applies. Both
+POSTs require `X-CSRF-Token` and an `Idempotency-Key` header containing
+1–120 printable non-space ASCII characters. Success is `200`.
+
+| Method/path | Request | Response |
+|---|---|---|
+| `GET /validation-runs/{run_id}/review` | None | `ReviewDetailOut` |
+| `POST /validation-runs/{run_id}/review/findings/{finding_id}` | `{expected_revision, decision: "accept"|"reject"|"flag", notes?}` | `DecisionOut` receipt |
+| `POST /validation-runs/{run_id}/review/decision` | `{expected_revision, decision: "approve"|"request_changes", notes?}` | `DecisionOut` receipt |
+
+Requests reject unknown fields. `expected_revision` is a required strict
+nonnegative integer; notes are nullable and at most 2000 characters. Notes
+are trimmed, with blank text stored as null. Rejecting a finding requires
+nonblank human justification (422), including for missing/unverified evidence.
+Other notes are optional. Client actor, timestamp, workspace, verification
+and role fields are never accepted.
+
+`DecisionOut` fields: `id, run_id, finding_id` (null for final decisions),
+`revision, decision, notes, actor_id, actor_name, actor_role, is_demo,
+created_at` (ISO UTC offset included). Replays return the original receipt,
+not the latest state; reload GET to obtain current review state.
+
+`ReviewDetailOut` fields:
+
+- `run`: unchanged `ValidationRunOut`, including original findings and the
+  run's stored evidence snapshots. Join `finding.evidence_chunk_ids` to
+  `run.evidence[].chunk_id`; never retrieve replacement live source text.
+- `content_text`: exact immutable version text reviewed.
+- `revision`: zero before the first event; advances once per committed event.
+- `status`: `pending|in_review|approved|changes_requested`.
+- `is_current`: true only for the latest run of the latest content version.
+- `is_demo`: explicit sandbox label.
+- `unresolved_finding_ids`, `accepted_finding_ids`: current human dispositions.
+- `approval_blockers`: zero or more of `stale_run`,
+  `incomplete_validation`, `unresolved_findings`, `accepted_issues`,
+  `review_final`. These are workflow blockers, not actor permission grants.
+- `decisions`: complete audit history ordered by revision, including
+  superseded finding decisions and the final decision.
+
+### Transitions and consistency
+
+Only the latest run of the latest immutable version accepts new review
+writes, and only after run state becomes `completed` or `partial`.
+`pending|running|failed` runs remain inspectable but cannot be reviewed.
+Every stored finding is required, irrespective of source or severity:
+
+- No decision or `flag` means unresolved. `flag` requests investigation.
+- `accept` agrees the issue exists; it is addressed for review purposes but
+  blocks approval. It does not mean the suggested correction was applied.
+- `reject` dismisses the finding with explicit human justification. It
+  never upgrades `NEEDS_VERIFICATION` to `SUPPORTED` or fabricates evidence.
+- Before finalization, another finding action may supersede a prior action;
+  the prior event remains immutable in the timeline.
+
+First finding action moves `pending → in_review`. Finalization requires
+every finding to be accepted or rejected (no outstanding flags). An empty
+finding set satisfies that requirement but never automatically approves.
+`approve` additionally requires run state `completed`, AI status `complete`,
+and no accepted issues. `request_changes` is allowed on complete or partial
+runs once all findings are addressed. Final events move to `approved` or
+`changes_requested`, including directly from pending for an empty finding
+set; the run's review then locks. Corrections create a new version and
+validation run; a rerun of the same version also starts a separate review.
+Prior decisions remain inspectable historical decisions, never inherited.
+
+Writes use short SQLite `BEGIN IMMEDIATE` transactions, re-reading current
+membership, exact content/run and review state after acquiring the writer
+lock. No provider I/O occurs under this lock. A request must match the
+current revision; concurrent writers at the same revision cannot both
+advance it. Lock contention and uniqueness conflicts produce 409.
+
+Keys are scoped to workspace + actor across all review POSTs. The request
+digest includes run, finding, decision, notes and expected revision. Same
+key + identical body/target returns the original event (including after
+finalization or a new version); a changed body/target gives 409. Replays
+still require authentication, current membership, write role and the
+separate-reviewer policy. New keys with stale revisions give 409. Identical
+actions with new keys/current revision are explicit new audit events.
+
+Errors retain the shared `{error:{code,message,request_id}}` envelope:
+401 missing/invalid/expired/revoked session; 403 role/CSRF/self-review;
+404 unknown or cross-workspace run, or finding outside the specified run;
+409 stale revision/run, final review, unmet prerequisites, replay conflict
+or concurrent writer; 422 invalid body/key or missing dismissal rationale.
+GET has no state-changing side effects. All responses retain private,
+no-store caching and existing body-limit protections.

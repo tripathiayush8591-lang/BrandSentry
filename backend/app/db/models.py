@@ -48,7 +48,7 @@ import uuid
 from datetime import UTC, datetime
 from typing import Literal
 
-from sqlalchemy import DateTime, ForeignKey, Index, String, Text, UniqueConstraint
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -630,3 +630,56 @@ class ProviderBudgetDay(Base):
     calls_reserved: Mapped[int] = mapped_column(nullable=False, default=0)
     tokens_reserved: Mapped[int] = mapped_column(nullable=False, default=0)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+
+
+class ReviewState(Base):
+    """Human review projection, separate from immutable engine output."""
+
+    __tablename__ = "review_states"
+    __table_args__ = (CheckConstraint("revision >= 0", name="ck_review_revision"),)
+
+    run_id: Mapped[str] = mapped_column(
+        String(64), ForeignKey("validation_runs.id", ondelete="RESTRICT"), primary_key=True
+    )
+    revision: Mapped[int] = mapped_column(nullable=False, default=0)
+    final_decision: Mapped[str | None] = mapped_column(String(24), nullable=True)
+
+
+class ReviewDecision(Base):
+    """Append-only decision and audit event; never edits findings or evidence."""
+
+    __tablename__ = "review_decisions"
+    __table_args__ = (
+        UniqueConstraint("run_id", "revision", name="uq_review_run_revision"),
+        UniqueConstraint("workspace_id", "actor_id", "idempotency_key", name="uq_review_key"),
+        CheckConstraint("revision > 0", name="ck_decision_revision"),
+        CheckConstraint(
+            "(finding_id IS NOT NULL AND decision IN ('accept', 'reject', 'flag')) OR "
+            "(finding_id IS NULL AND decision IN ('approve', 'request_changes'))",
+            name="ck_review_decision_target",
+        ),
+        Index("ix_review_decisions_run", "run_id", "revision"),
+    )
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    workspace_id: Mapped[str] = mapped_column(
+        String(64), ForeignKey("workspaces.id", ondelete="RESTRICT"), nullable=False
+    )
+    run_id: Mapped[str] = mapped_column(
+        String(64), ForeignKey("validation_runs.id", ondelete="RESTRICT"), nullable=False
+    )
+    finding_id: Mapped[str | None] = mapped_column(
+        String(64), ForeignKey("validation_findings.id", ondelete="RESTRICT"), nullable=True
+    )
+    actor_id: Mapped[str] = mapped_column(
+        String(64), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
+    )
+    actor_name: Mapped[str] = mapped_column(String(200), nullable=False)
+    actor_role: Mapped[str] = mapped_column(String(16), nullable=False)
+    is_demo: Mapped[bool] = mapped_column(nullable=False)
+    revision: Mapped[int] = mapped_column(nullable=False)
+    decision: Mapped[str] = mapped_column(String(24), nullable=False)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    idempotency_key: Mapped[str] = mapped_column(String(120), nullable=False)
+    request_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)

@@ -80,3 +80,17 @@ Repository interfaces cover `users`, `workspaces`, `sources`, `submissions`, `fi
 
 ## I. Diagram scope and exclusions
 This is the system-context / service architecture. Exact entities, endpoint schemas, security and state transitions live in DATA_API_CONTRACTS.md; UI visuals stay intentionally flexible as documented in PRD.md.
+
+## J. Phase 5A implemented human-review boundary
+
+Human review uses `services/review.py` and three routes under
+`/api/v1/validation-runs/{run_id}/review`. `review_states` is a per-run
+projection; `review_decisions` combines append-only decisions and their
+audit events, committed atomically under a short SQLite writer transaction.
+Machine output and evidence snapshots remain owned by validation and are
+never rewritten by review. Existing submission status is still machine
+validation status; human status and current-run applicability are exposed
+separately in review detail. A new version/run does not inherit approval.
+Real authors cannot review their own content; isolated demo self-review is
+explicitly labelled. See DATA_API_CONTRACTS §12 for the shipped policy,
+revision/idempotency controls and exact frontend contract.
