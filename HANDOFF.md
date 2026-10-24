@@ -266,3 +266,35 @@ Frontend auth screens (Google + Continue as Guest), Firebase client config, `VIT
   Next action: user visual review; release only with explicit push/deploy
   authorisation and the existing deployment checklist.
 
+# Separate dark/light reference implementation — 2026-10-24
+
+- Code commit: `be63bb5cd174f349d03daa4313f4c81ddd386f42`.
+  User asked to follow the 9.25 PM image for dark, then supplied the 9.39 PM
+  image as the light reference while work was active. Both were incorporated.
+- Changed: `frontend/src/editorial.css` (theme tokens, portrait/bento/card/banner
+  layout and responsive shell), `OverviewView.tsx`, `App.tsx`, `main.tsx`, compact
+  `SessionProfile.tsx` disclosure, supplied-reference artwork, existing App/E2E
+  assertions, visual registry, asset provenance and reference QA documentation.
+- Dark: black panels, pink headline/actions and lime hero CTA/secondary accents.
+  Light: paper ivory, emerald type/portrait and banner, vermilion accents and
+  print-style disks/halftone/orbit artwork. Existing shield and ShineTypewriter
+  preserved. All workflow handlers/services/types/backend contracts unchanged.
+- Real commands: frontend lint/typecheck/build passed; `npm test` 77 passed;
+  full `npm run test:e2e` 12 passed, final targeted redesign suite 2 passed after
+  last CSS updates. Backend with provider key empty: pytest 196 passed, 1 skipped
+  (existing Windows/POSIX volume-path limitation), existing Starlette warning.
+- Coverage: MOCK external boundaries and local LIVE_BACKEND HTTP/SQLite browser
+  flow, auth isolation/expiry/restart/CSRF/logout, synthetic guideline→rule→draft→
+  finding/source flow, 320–1584px layouts, keyboard/theme/reduced-motion/contrast.
+  Theme-specific image visibility and real portrait loading now checked too.
+  No LIVE_PROVIDER Google/Gemini or LIVE_DEPLOYMENT check/request performed.
+- Visual evidence: latest `design-qa.md` has `final result: passed`; reference
+  comparisons and source-sized captures in `frontend/evidence/phase3c-redesign/`.
+  Actual Codex in-app browser inspected, console errors returned empty. Artwork
+  prompt briefs/provenance: `frontend/public/images/EDITORIAL_ASSETS.md`.
+- Local preview left running and marked deliverable: `http://127.0.0.1:5175/`,
+  with isolated local API on `127.0.0.1:8003`, no Gemini key. No public URL,
+  push or deployment. Existing untracked evidence and modified tsbuildinfo left
+  outside commits. Next action: user visual review; release remains separately
+  authorised. P3: original transparent PNGs can be optimized for delivery later.
+
