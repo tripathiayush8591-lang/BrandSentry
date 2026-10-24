@@ -1,0 +1,121 @@
+{
+  "coverage": [
+    "LIVE_PROVIDER Firebase Google",
+    "LIVE_BACKEND FastAPI SQLite",
+    "LIVE_BROWSER in-app browser"
+  ],
+  "project_id": "brandsentry-68d05",
+  "admin_verification_passed": true,
+  "google_exchange_http_status": 200,
+  "me_after_exchange_http_status": 200,
+  "restored_after_new_tab_and_reload": true,
+  "restored_after_backend_restart": true,
+  "logout_http_status": 204,
+  "me_after_logout_http_status": 401,
+  "signed_out_after_reload": true,
+  "google_sessions_created": 1,
+  "google_sessions_revoked": 1,
+  "events": [
+    {
+      "time": "2026-10-23T19:06:33.788747+00:00",
+      "path": "/api/v1/auth/me",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "time": "2026-10-23T19:06:33.789788+00:00",
+      "path": "/api/v1/auth/me",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "time": "2026-10-23T19:06:46.023987+00:00",
+      "path": "/api/v1/auth/google",
+      "method": "OPTIONS",
+      "status": 200
+    },
+    {
+      "time": "2026-10-23T19:06:47.164064+00:00",
+      "verification": "passed"
+    },
+    {
+      "time": "2026-10-23T19:06:47.200083+00:00",
+      "path": "/api/v1/auth/google",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "time": "2026-10-23T19:06:47.225406+00:00",
+      "path": "/api/v1/auth/me",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "time": "2026-10-23T19:07:39.243622+00:00",
+      "path": "/api/v1/auth/me",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "time": "2026-10-23T19:07:39.256182+00:00",
+      "path": "/api/v1/auth/me",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "time": "2026-10-23T19:07:46.600357+00:00",
+      "path": "/api/v1/auth/me",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "time": "2026-10-23T19:07:46.601435+00:00",
+      "path": "/api/v1/auth/me",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "time": "2026-10-23T19:08:06.370072+00:00",
+      "path": "/api/v1/auth/me",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "time": "2026-10-23T19:08:06.371498+00:00",
+      "path": "/api/v1/auth/me",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "time": "2026-10-23T19:08:26.097058+00:00",
+      "path": "/api/v1/auth/logout",
+      "method": "OPTIONS",
+      "status": 200
+    },
+    {
+      "time": "2026-10-23T19:08:26.119152+00:00",
+      "path": "/api/v1/auth/logout",
+      "method": "POST",
+      "status": 204
+    },
+    {
+      "time": "2026-10-23T19:08:26.123874+00:00",
+      "path": "/api/v1/auth/me",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "time": "2026-10-23T19:08:34.499294+00:00",
+      "path": "/api/v1/auth/me",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "time": "2026-10-23T19:08:34.500135+00:00",
+      "path": "/api/v1/auth/me",
+      "method": "GET",
+      "status": 401
+    }
+  ],
+  "cookie_deletion_header_coverage": "12 backend regression combinations and prior Chromium cookie evidence; current browser API did not expose cookie inspection"
+}

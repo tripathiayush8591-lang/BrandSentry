@@ -1,0 +1,11 @@
+{
+  "coverage": "LIVE_BACKEND + Chromium",
+  "sessionHttpOnly": true,
+  "sameSite": "Lax",
+  "restoredSameUserAndWorkspaceAfterRestart": true,
+  "logoutHttpStatus": 204,
+  "revokedSessionMeStatus": 401,
+  "logoutSetCookieHeaderPresent": true,
+  "retainedCookieNames": [],
+  "cookieDeletionPassed": true
+}
