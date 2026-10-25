@@ -16,14 +16,17 @@ import { ProtectedRoute } from '../features/auth/ProtectedRoute';
 import { SessionProfile } from '../features/auth/SessionProfile';
 import { ThemeProvider } from '../context/ThemeProvider';
 import { PreviewPage } from '../features/preview/PreviewPage';
+import { useDemoMode } from '../features/preview/demo-context';
+import { Link } from 'react-router-dom';
 
 const ApplicationShell: React.FC = () => {
-  const { connectionState, checkConnection, apiBaseUrl } = useBackendStatus();
+  const demo = useDemoMode();
+  const { connectionState, checkConnection, apiBaseUrl } = useBackendStatus(5000, !demo);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   React.useEffect(() => {
-    document.title = 'Workspace · BrandSentry';
-  }, []);
+    document.title = demo ? 'Guest Demo · BrandSentry' : 'Workspace · BrandSentry';
+  }, [demo]);
 
   return (
     <div className="product-workspace min-h-screen flex flex-col bg-neu-canvas-light dark:bg-neu-canvas-dark text-slate-900 dark:text-slate-100 font-sans selection:bg-brand-100 dark:selection:bg-brand-900/50 selection:text-brand-900 dark:selection:text-brand-100 transition-colors duration-150">
@@ -42,7 +45,14 @@ const ApplicationShell: React.FC = () => {
       />
 
       {/* Session Profile Bar (Preserved for Phase 2B integration & tests) */}
-      <SessionProfile />
+      {demo ? <section className="session-profile" aria-label="Demo mode disclosure">
+        <div className="session-profile-inner flex-wrap">
+          <strong>Guest Demo — Synthetic Data</strong>
+          <span>BrewNest Coffee · Simulated validation, evidence and review records.</span>
+          <Link to="/login" className="session-logout">Exit demo</Link>
+        </div>
+        <p className="session-limit px-4 pb-3">Available in connected mode: uploads, live Gemini, saving and real approvals. This preview sends no API requests and saves no records.</p>
+      </section> : <SessionProfile />}
 
       {/* Main Body with Persistent Responsive Sidebar */}
       <div className="workspace-body flex-1 flex w-full mx-auto">
@@ -103,9 +113,22 @@ function ConnectedOverview() {
 
 export const App: React.FC = () => (
   <ThemeProvider>
-    <AuthProvider>
       <Routes>
-        <Route path="/preview" element={<PreviewPage />} />
+        <Route path="/preview" element={<PreviewPage />}>
+          <Route element={<ApplicationShell />}>
+            <Route index element={<ConnectedOverview />} />
+            <Route path="vault" element={<BrandVaultView />} />
+            <Route path="studio" element={<ContentStudioView />} />
+            <Route path="studio/:submissionId" element={<ContentStudioView />} />
+            <Route path="runs" element={<ValidationRunsView />} />
+            <Route path="runs/:runId" element={<EvidenceFindingsView />} />
+            <Route path="findings" element={<EvidenceFindingsView sampleRunId="brewnest-run-1" />} />
+            <Route path="review" element={<EvidenceFindingsView sampleRunId="brewnest-run-1" />} />
+            <Route path="insights" element={<InsightsView />} />
+            <Route path="*" element={<NotFoundView />} />
+          </Route>
+        </Route>
+        <Route element={<AuthProvider><Outlet /></AuthProvider>}>
         <Route path="/login" element={<LoginPage />} />
         <Route element={<ProtectedRoute />}>
           <Route element={<ApplicationShell />}>
@@ -119,8 +142,8 @@ export const App: React.FC = () => (
             <Route path="*" element={<NotFoundView />} />
           </Route>
         </Route>
+        </Route>
       </Routes>
-    </AuthProvider>
   </ThemeProvider>
 );
 

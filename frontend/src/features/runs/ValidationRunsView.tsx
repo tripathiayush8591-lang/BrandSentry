@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from '../../components/workspace-routing';
 import { Card } from '../../components/Card';
-import { brandApi } from '../../services/brand-api';
+import { useBrandApi } from '../../services/useBrandApi';
 import type { ValidationRunSummary } from '../../types/validation';
 import {
   ShieldCheck,
@@ -12,12 +12,13 @@ import {
 } from 'lucide-react';
 
 export const ValidationRunsView: React.FC = () => {
+  const brandApi = useBrandApi();
   const [runs, setRuns] = useState<ValidationRunSummary[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  const loadRuns = async () => {
+  const loadRuns = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -28,11 +29,11 @@ export const ValidationRunsView: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [brandApi]);
 
   useEffect(() => {
     loadRuns();
-  }, []);
+  }, [loadRuns]);
 
   const filteredRuns = runs.filter((r) => {
     if (statusFilter === 'all') return true;

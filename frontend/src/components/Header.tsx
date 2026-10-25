@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from './workspace-routing';
+import { useNavigate } from './useWorkspaceNavigate';
 import { Menu, X, Search } from 'lucide-react';
 import { Navigation } from './Navigation';
 import { StatusBadge } from './StatusBadge';
 import { ThemeToggle } from './ThemeToggle';
 import { ConnectionState } from '../types/api';
+import { useDemoMode } from '../features/preview/demo-context';
 
 interface HeaderProps {
   connectionState: ConnectionState;
@@ -12,6 +14,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ connectionState }) => {
+  const demo = useDemoMode();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
@@ -99,7 +102,7 @@ export const Header: React.FC<HeaderProps> = ({ connectionState }) => {
           <div className="flex items-center gap-2.5">
             <ThemeToggle />
             <div className="hidden xs:block">
-              <StatusBadge state={connectionState} />
+              {demo ? <span className="text-xs">Offline demo</span> : <StatusBadge state={connectionState} />}
             </div>
           </div>
         </div>
@@ -114,7 +117,7 @@ export const Header: React.FC<HeaderProps> = ({ connectionState }) => {
         >
           <div className="sm:hidden pb-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Connection:</span>
-            <StatusBadge state={connectionState} />
+            {demo ? <span className="text-xs">Offline demo</span> : <StatusBadge state={connectionState} />}
           </div>
           <div>
             <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-3 mb-2">

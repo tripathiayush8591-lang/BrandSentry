@@ -1,6 +1,7 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink } from './workspace-routing';
 import { NAVIGATION_ITEMS } from '../types/navigation';
+import { useDemoMode } from '../features/preview/demo-context';
 import {
   LayoutDashboard,
   Archive,
@@ -20,6 +21,7 @@ const getNavIcon = (id: string) => {
     case 'content-studio':
       return <FileEdit className="w-4 h-4 flex-shrink-0" aria-hidden="true" />;
     case 'validation-runs':
+    case 'findings':
       return <ShieldCheck className="w-4 h-4 flex-shrink-0" aria-hidden="true" />;
     case 'approvals':
       return <CheckCircle2 className="w-4 h-4 flex-shrink-0" aria-hidden="true" />;
@@ -40,6 +42,13 @@ export const Navigation: React.FC<NavigationProps> = ({
   orientation = 'vertical',
 }) => {
   const isHorizontal = orientation === 'horizontal';
+  const demo = useDemoMode();
+  const items = demo ? [
+    ...NAVIGATION_ITEMS.filter(item => item.id !== 'approvals' && item.id !== 'insights'),
+    { id: 'findings', label: 'Evidence & Findings', href: '/findings', status: 'active' },
+    { id: 'approvals', label: 'Human Review', href: '/review', status: 'active' },
+    ...NAVIGATION_ITEMS.filter(item => item.id === 'insights'),
+  ] : NAVIGATION_ITEMS;
 
   return (
     <nav
@@ -50,7 +59,7 @@ export const Navigation: React.FC<NavigationProps> = ({
           : 'flex flex-col gap-1.5 w-full'
       }
     >
-      {NAVIGATION_ITEMS.map((item) => {
+      {items.map((item) => {
         const isUpcoming = item.status === 'upcoming';
         const icon = getNavIcon(item.id);
 

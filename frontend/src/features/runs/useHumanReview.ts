@@ -1,5 +1,7 @@
+import { useDemoMode } from '../preview/demo-context';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { brandApi, BrandApiError } from '../../services/brand-api';
+import { BrandApiError } from '../../services/brand-api';
+import { useBrandApi } from '../../services/useBrandApi';
 import { useAuth } from '../auth/auth-context';
 import type { ReviewDetail, FindingDecisionRequest, FinalDecisionRequest } from '../../types/review';
 import type { SubmissionDetail } from '../../types/validation';
@@ -9,6 +11,8 @@ type Action = { findingId: string; body: FindingDecisionRequest; key: string }
 
 export function useHumanReview(runId: string) {
   const { session, restore } = useAuth();
+  const brandApi = useBrandApi();
+  const demo = useDemoMode();
   const [review, setReview] = useState<ReviewDetail | null>(null);
   const [submission, setSubmission] = useState<SubmissionDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -27,7 +31,7 @@ export function useHumanReview(runId: string) {
     const author = await brandApi.getSubmission(detail.run.submission_id);
     if (current !== generation.current.value) return;
     setReview(detail); setSubmission(author); setNeedsRefresh(false);
-  }, [runId]);
+  }, [runId, brandApi]);
 
   useEffect(() => {
     const tracker = generation.current;
@@ -48,7 +52,8 @@ export function useHumanReview(runId: string) {
 
   const version = submission?.versions.find((item) => item.id === review?.run.content_version_id);
   let permissionReason: string | null = null;
-  if (!session || !['admin', 'reviewer'].includes(session.role)) permissionReason = 'Your workspace role does not permit review. An admin or reviewer must decide.';
+  if (demo) permissionReason = 'Available in connected mode. This is simulated review history; no decisions can be recorded.';
+  else if (!session || !['admin', 'reviewer'].includes(session.role)) permissionReason = 'Your workspace role does not permit review. An admin or reviewer must decide.';
   else if (!submission || !version) permissionReason = 'Author permissions could not be confirmed. Refresh review state.';
   else if (session.workspace.kind !== 'demo' && [submission.created_by, version.created_by].includes(session.user.id)) permissionReason = 'Original authors cannot review their own content. A separate reviewer must decide.';
   else if (denied) permissionReason = 'The server denied review permission or session protection. Refresh your session before continuing.';

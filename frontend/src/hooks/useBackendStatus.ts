@@ -8,7 +8,7 @@ export interface UseBackendStatusReturn {
   apiBaseUrl: string;
 }
 
-export function useBackendStatus(timeoutMs = 5000): UseBackendStatusReturn {
+export function useBackendStatus(timeoutMs = 5000, enabled = true): UseBackendStatusReturn {
   const [connectionState, setConnectionState] = useState<ConnectionState>({
     status: 'loading',
   });
@@ -16,6 +16,7 @@ export function useBackendStatus(timeoutMs = 5000): UseBackendStatusReturn {
   const apiBaseUrl = getApiBaseUrl();
 
   const checkConnection = useCallback(async () => {
+    if (!enabled) return;
     // Abort any existing in-flight request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -52,7 +53,7 @@ export function useBackendStatus(timeoutMs = 5000): UseBackendStatusReturn {
         setConnectionState(toErrorConnectionState(err));
       }
     }
-  }, [apiBaseUrl, timeoutMs]);
+  }, [apiBaseUrl, timeoutMs, enabled]);
 
   useEffect(() => {
     // Probe on initial mount

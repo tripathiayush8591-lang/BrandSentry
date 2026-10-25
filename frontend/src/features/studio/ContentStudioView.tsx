@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
+import { useNavigate } from '../../components/useWorkspaceNavigate';
 import { Card } from '../../components/Card';
-import { brandApi } from '../../services/brand-api';
+import { useBrandApi } from '../../services/useBrandApi';
+import { useDemoMode } from '../preview/demo-context';
+import { demoSubmissions, demoTexts } from '../preview/demo-data';
 import type { ContentSubmission, SubmissionDetail } from '../../types/validation';
 import {
   ShieldCheck,
@@ -15,6 +18,8 @@ const MAX_CHARS = 12000;
 
 export const ContentStudioView: React.FC = () => {
   const navigate = useNavigate();
+  const brandApi = useBrandApi();
+  const demo = useDemoMode();
   const { submissionId } = useParams<{ submissionId?: string }>();
 
   const [submissions, setSubmissions] = useState<ContentSubmission[]>([]);
@@ -36,7 +41,7 @@ export const ContentStudioView: React.FC = () => {
   const isOverLimit = charCount > MAX_CHARS;
 
   // Load submissions list
-  const loadSubmissions = async () => {
+  const loadSubmissions = useCallback(async () => {
     setLoadingSubmissions(true);
     try {
       const data = await brandApi.listSubmissions(50);
@@ -46,14 +51,15 @@ export const ContentStudioView: React.FC = () => {
     } finally {
       setLoadingSubmissions(false);
     }
-  };
+  }, [brandApi]);
 
   // Load active submission details
-  const loadSubmissionDetail = async (id: string) => {
+  const loadSubmissionDetail = useCallback(async (id: string) => {
     try {
       const detail = await brandApi.getSubmission(id);
       setActiveSubmission(detail);
       setTitle(detail.title);
+      if (demo) setText(demoTexts[demoSubmissions.findIndex(item => item.id === id)] ?? '');
       setIsCreatingNew(false);
       // Select latest version
       if (detail.versions.length > 0) {
@@ -63,11 +69,11 @@ export const ContentStudioView: React.FC = () => {
     } catch (err) {
       setFeedback({ type: 'error', message: err instanceof Error ? err.message : 'Failed to load submission detail' });
     }
-  };
+  }, [brandApi, demo]);
 
   useEffect(() => {
     loadSubmissions();
-  }, []);
+  }, [loadSubmissions]);
 
   useEffect(() => {
     if (submissionId) {
@@ -78,7 +84,7 @@ export const ContentStudioView: React.FC = () => {
       setText('');
       setActiveSubmission(null);
     }
-  }, [submissionId]);
+  }, [submissionId, loadSubmissionDetail]);
 
   // Handle Save New Submission
   const handleSaveDraft = async () => {
@@ -187,7 +193,7 @@ export const ContentStudioView: React.FC = () => {
           <button
             type="button"
             onClick={handleRunValidation}
-            disabled={isValidating || !text.trim() || isOverLimit}
+            disabled={demo || isValidating || !text.trim() || isOverLimit}
             className="px-4 py-2 rounded-xl neu-btn-primary text-xs flex items-center gap-2 shadow-md"
           >
             {isValidating ? (
@@ -382,7 +388,7 @@ export const ContentStudioView: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleSaveDraft}
-                    disabled={isSavingDraft || !title.trim() || !text.trim() || isOverLimit}
+                    disabled={demo || isSavingDraft || !title.trim() || !text.trim() || isOverLimit}
                     className="px-4 py-2 rounded-xl neu-btn-secondary text-xs font-medium"
                   >
                     {isSavingDraft ? 'Saving Draft...' : 'Save Draft'}
@@ -391,7 +397,7 @@ export const ContentStudioView: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleCreateRevision}
-                    disabled={isSavingDraft || !text.trim() || isOverLimit}
+                    disabled={demo || isSavingDraft || !text.trim() || isOverLimit}
                     className="px-4 py-2 rounded-xl neu-btn-secondary text-xs font-medium"
                   >
                     {isSavingDraft ? 'Creating Version...' : 'Save New Revision'}
@@ -401,7 +407,7 @@ export const ContentStudioView: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleRunValidation}
-                  disabled={isValidating || !text.trim() || isOverLimit}
+                  disabled={demo || isValidating || !text.trim() || isOverLimit}
                   className="px-5 py-2 rounded-xl neu-btn-primary text-xs flex items-center gap-1.5 shadow-md"
                 >
                   {isValidating ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}

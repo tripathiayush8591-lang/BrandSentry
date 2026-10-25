@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { Link } from '../../components/workspace-routing';
 import { Card } from '../../components/Card';
 import { useHumanReview } from './useHumanReview';
 import { ExportReport } from './ExportReport';
@@ -15,9 +16,9 @@ import {
   Info,
 } from 'lucide-react';
 
-export const EvidenceFindingsView: React.FC = () => {
+export const EvidenceFindingsView: React.FC<{ sampleRunId?: string }> = ({ sampleRunId }) => {
   const { runId } = useParams<{ runId: string }>();
-  return <ReviewRun key={runId} runId={runId ?? ''} />;
+  return <ReviewRun key={sampleRunId ?? runId} runId={sampleRunId ?? runId ?? ''} />;
 };
 
 function ReviewRun({ runId }: { runId: string }) {

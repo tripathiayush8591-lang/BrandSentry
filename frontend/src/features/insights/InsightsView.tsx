@@ -1,7 +1,8 @@
+import { useDemoMode } from '../preview/demo-context';
 import { useEffect, useState } from 'react';
 import { Card } from '../../components/Card';
 import { useAuth } from '../auth/auth-context';
-import { brandApi } from '../../services/brand-api';
+import { useBrandApi } from '../../services/useBrandApi';
 import type { InsightsSummary } from '../../types/insights';
 
 const labels: Record<string, string> = {
@@ -17,7 +18,9 @@ function Counts({ counts }: { counts: Record<string, number> }) {
 
 export function InsightsView() {
   const { session } = useAuth();
-  const allowed = session?.role === 'admin' || session?.role === 'reviewer';
+  const brandApi = useBrandApi();
+  const demo = useDemoMode();
+  const allowed = demo || session?.role === 'admin' || session?.role === 'reviewer';
   const [data, setData] = useState<InsightsSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -32,7 +35,7 @@ export function InsightsView() {
       if (active) setError(err instanceof Error ? err.message : 'Unable to load governance summary.');
     }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [allowed, session?.workspace.id, refresh]);
+  }, [allowed, session?.workspace.id, refresh, brandApi]);
 
   return <div className="max-w-7xl mx-auto space-y-6">
     <div className="flex flex-wrap items-center justify-between gap-4">
@@ -42,7 +45,7 @@ export function InsightsView() {
     <p className="text-sm text-slate-600 dark:text-slate-400">All recorded runs in this workspace, including repeat validations and historical versions. These are counts, not trends or unique issues. Historical approvals do not approve current content.</p>
     {!allowed ? <p role="alert">Governance insights require an admin or reviewer role.</p> :
       loading ? <p role="status">Loading governance summary…</p> : error ? <p role="alert">{error}</p> : data && <>
-        {data.is_demo && <p className="text-sm">Isolated demo workspace — counts reflect recorded demo activity.</p>}
+        {data.is_demo && <p className="text-sm">{demo ? 'Synthetic metrics from the sample records — no live activity or provider results.' : 'Isolated demo workspace — counts reflect recorded demo activity.'}</p>}
         <Card className="p-6 space-y-3"><h2 className="text-lg font-semibold">Validation runs: {data.validation_runs}</h2>
           {data.validation_runs === 0 && <p>No validation runs recorded. There are no findings or review outcomes to summarize yet.</p>}
           <Counts counts={data.run_states} />

@@ -3,6 +3,7 @@ import type { ReviewDetail, ReviewDecision, FindingDecision, FinalDecision } fro
 import { Card } from '../../components/Card';
 import type { useHumanReview } from './useHumanReview';
 import './review.css';
+import { useDemoMode } from '../preview/demo-context';
 
 type Controller = ReturnType<typeof useHumanReview>;
 const labels: Record<string, string> = { pending: 'Pending human review', in_review: 'Partially reviewed', approved: 'Approved', changes_requested: 'Changes requested' };
@@ -10,12 +11,13 @@ const decisions: Record<string, string> = { accept: 'Accept — issue exists', r
 const blockers: Record<string, string> = { stale_run: 'A newer content version or validation run exists.', incomplete_validation: 'Validation and AI analysis must both be complete for approval.', unresolved_findings: 'Accept or reject every finding before finalizing. Flagged findings remain unresolved.', accepted_issues: 'Accepted issues block approval. Request changes or reconsider the finding decisions.', review_final: 'This review is finalized and locked.' };
 
 export function ReviewSummary({ controller: c }: { controller: Controller }) {
+  const demo = useDemoMode();
   const r = c.review!;
   return <Card className="review-panel p-5 space-y-3">
     <div className="review-heading"><div><h2>Human review</h2><p className="review-muted">Exact version · revision {r.revision}</p></div>
       <strong className="review-status">{!r.is_current ? 'Historical · ' : ''}{labels[r.status]}</strong></div>
     <p>{r.run.findings.length - r.unresolved_finding_ids.length} of {r.run.findings.length} findings resolved · {r.unresolved_finding_ids.length} pending or flagged</p>
-    {r.is_demo && <p className="review-callout">Demo self-review · Actions use your actual guest identity. This is an isolated demonstration, not independent multi-person approval.</p>}
+    {r.is_demo && <p className="review-callout">{demo ? 'Simulated review history · Fictional reviewer and sample decisions. No human decision has been performed or saved in this preview.' : 'Demo self-review · Actions use your actual guest identity. This is an isolated demonstration, not independent multi-person approval.'}</p>}
     <p className="review-muted">Human judgments are recorded separately. They do not change the original AI assessment, source verification, or saved evidence.</p>
     {(c.permissionReason || c.workflowReason) && <p className="review-callout">{c.permissionReason || c.workflowReason}</p>}
     {c.error && <p role="alert" className="review-callout">{c.error}</p>}
@@ -55,8 +57,9 @@ export function FindingReview({ findingId, index, review, disabled, onDecide }: 
 }
 
 function Attribution({ event }: { event: ReviewDecision }) {
+  const demo = useDemoMode();
   return <div className="review-attribution">
-    <p>{event.actor_name} · {event.actor_role}{event.is_demo ? ' · Demo self-review' : ''} · <time dateTime={event.created_at}>{new Date(event.created_at).toLocaleString()}</time></p>
+    <p>{event.actor_name} · {event.actor_role}{demo ? ' · Simulated decision' : event.is_demo ? ' · Demo self-review' : ''} · <time dateTime={event.created_at}>{new Date(event.created_at).toLocaleString()}</time></p>
     <p className="review-muted review-id">Actor {event.actor_id}</p>
     {event.notes && <p className="review-content">{event.notes}</p>}
   </div>;

@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Card } from '../../components/Card';
-import { brandApi } from '../../services/brand-api';
+import { useBrandApi } from '../../services/useBrandApi';
 import { useAuth } from '../auth/auth-context';
 import type {
   KnowledgeDocument,
@@ -29,6 +29,7 @@ import {
 
 export const BrandVaultView: React.FC = () => {
   const { session } = useAuth();
+  const brandApi = useBrandApi();
   const [searchParams] = useSearchParams();
   const initialSearch = searchParams.get('search') || '';
 
@@ -75,7 +76,7 @@ export const BrandVaultView: React.FC = () => {
   const isAdmin = session?.role === 'admin';
 
   // Load documents
-  const loadDocuments = async () => {
+  const loadDocuments = useCallback(async () => {
     setLoadingDocs(true);
     try {
       const data = await brandApi.listDocuments();
@@ -85,10 +86,10 @@ export const BrandVaultView: React.FC = () => {
     } finally {
       setLoadingDocs(false);
     }
-  };
+  }, [brandApi]);
 
   // Load rules
-  const loadRules = async () => {
+  const loadRules = useCallback(async () => {
     setLoadingRules(true);
     try {
       const data = await brandApi.listRules();
@@ -98,10 +99,10 @@ export const BrandVaultView: React.FC = () => {
     } finally {
       setLoadingRules(false);
     }
-  };
+  }, [brandApi]);
 
   // Load claims
-  const loadClaims = async () => {
+  const loadClaims = useCallback(async () => {
     setLoadingClaims(true);
     try {
       const data = await brandApi.listClaims();
@@ -111,7 +112,21 @@ export const BrandVaultView: React.FC = () => {
     } finally {
       setLoadingClaims(false);
     }
-  };
+  }, [brandApi]);
+
+  const handleSearch = useCallback(async (queryText: string) => {
+    if (!queryText.trim()) return;
+    setIsSearching(true);
+    setFeedback(null);
+    try {
+      const res = await brandApi.searchKnowledge(queryText.trim(), 8);
+      setSearchResults(res.results);
+    } catch (err) {
+      setFeedback({ type: 'error', message: err instanceof Error ? err.message : 'Search failed' });
+    } finally {
+      setIsSearching(false);
+    }
+  }, [brandApi]);
 
   useEffect(() => {
     loadDocuments();
@@ -120,7 +135,7 @@ export const BrandVaultView: React.FC = () => {
     if (initialSearch) {
       handleSearch(initialSearch);
     }
-  }, [initialSearch]);
+  }, [initialSearch, loadDocuments, loadRules, loadClaims, handleSearch]);
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -234,19 +249,7 @@ export const BrandVaultView: React.FC = () => {
     }
   };
 
-  const handleSearch = async (queryText: string) => {
-    if (!queryText.trim()) return;
-    setIsSearching(true);
-    setFeedback(null);
-    try {
-      const res = await brandApi.searchKnowledge(queryText.trim(), 8);
-      setSearchResults(res.results);
-    } catch (err) {
-      setFeedback({ type: 'error', message: err instanceof Error ? err.message : 'Search failed' });
-    } finally {
-      setIsSearching(false);
-    }
-  };
+
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">

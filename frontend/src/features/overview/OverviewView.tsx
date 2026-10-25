@@ -1,9 +1,10 @@
+import { useDemoMode } from '../preview/demo-context';
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '../../components/workspace-routing';
 import { ConnectionState } from '../../types/api';
 import { ConnectivityPanel } from './ConnectivityPanel';
 import { Card } from '../../components/Card';
-import { brandApi } from '../../services/brand-api';
+import { useBrandApi } from '../../services/useBrandApi';
 import { useAuth } from '../auth/auth-context';
 import { useTheme } from '../../context/theme-context';
 import { ArrowRight, PlusCircle, BookOpen, Sliders, FileText, ChartNoAxesColumn, ShieldCheck, Zap } from 'lucide-react';
@@ -19,6 +20,8 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
   apiBaseUrl,
 }) => {
   const { session } = useAuth();
+  const brandApi = useBrandApi();
+  const demo = useDemoMode();
   const { isDark } = useTheme();
   const [docCount, setDocCount] = useState<number | null>(null);
   const [ruleCount, setRuleCount] = useState<number | null>(null);
@@ -28,7 +31,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
   const [loadingMetrics, setLoadingMetrics] = useState(false);
   useEffect(() => {
     let isMounted = true;
-    if (session) {
+    if (session || demo) {
       setLoadingMetrics(true);
       setMetricsError(false);
       Promise.allSettled([
@@ -49,7 +52,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [session]);
+  }, [session, demo, brandApi]);
 
   return (
     <div className="editorial-overview max-w-7xl mx-auto">
@@ -57,7 +60,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
       <section className="overview-bento" aria-label="Workspace overview">
         <div className="editorial-hero">
           <div className="editorial-hero-copy">
-            <p className="editorial-eyebrow">{session?.workspace.name ?? 'Your workspace'}</p>
+            <p className="editorial-eyebrow">{session?.workspace.name ?? (demo ? 'BrewNest Coffee · Synthetic workspace' : 'Your workspace')}</p>
             <h1>Your brand, <br /><span>in good hands.</span></h1>
             <p>Check your content against your guidelines. See what needs attention before you publish.</p>
             <Link to="/studio" className="hero-cta"><PlusCircle size={18} /> Create a submission <ArrowRight size={16} /></Link>
@@ -112,11 +115,11 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
       </section>
       <div className="editorial-utility">
       <p className="overview-note">Missing evidence is marked Needs Verification. Final decisions stay with people.</p>
-      {connectionState.status === 'error' && <p role="status" className="text-sm text-rose-700 dark:text-rose-300">We couldn’t connect. Some actions may be unavailable. <button className="underline font-semibold" onClick={() => void onRetry()}>Try again</button></p>}
-      <details className="service-details">
+      {!demo && connectionState.status === 'error' && <p role="status" className="text-sm text-rose-700 dark:text-rose-300">We couldn’t connect. Some actions may be unavailable. <button className="underline font-semibold" onClick={() => void onRetry()}>Try again</button></p>}
+      {!demo && <details className="service-details">
         <summary>Connection details</summary>
         <div><ConnectivityPanel connectionState={connectionState} onRetry={onRetry} apiBaseUrl={apiBaseUrl} /></div>
-      </details>
+      </details>}
       </div>
     </div>
   );

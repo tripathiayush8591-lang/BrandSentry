@@ -9,15 +9,15 @@ for (const status of [401, 403, 502]) {
     if (status !== 401) await expect(page.getByRole('button', { name: 'Retry session check' })).toBeVisible();
     const mutations: string[] = [];
     page.on('request', (request) => { if (request.method() !== 'GET') mutations.push(request.method()); });
-    await page.getByRole('link', { name: 'Explore read-only preview' }).click();
-    await expect(page.getByText('Read-only preview · Synthetic data', { exact: true })).toBeVisible();
-    await expect(page.getByText('Preview state: Not validated', { exact: true })).toBeVisible();
+    await page.getByRole('link', { name: 'Explore Guest Demo' }).click();
+    await expect(page.getByText('Guest Demo — Synthetic Data', { exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Your brand, in good hands.' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Sign out', exact: true })).toHaveCount(0);
     await page.getByRole('switch', { name: 'Dark mode' }).click();
     await page.setViewportSize({ width: 390, height: 844 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.reload();
-    await expect(page.getByText('Preview state: No review decision', { exact: true })).toBeVisible();
+    await expect(page.getByText('Guest Demo — Synthetic Data', { exact: true })).toBeVisible();
     expect(mutations).toEqual([]);
   });
 }

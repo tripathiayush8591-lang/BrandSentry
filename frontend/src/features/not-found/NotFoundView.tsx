@@ -1,5 +1,6 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { Link } from '../../components/workspace-routing';
 import { Card } from '../../components/Card';
 import { FileQuestion, ArrowLeft } from 'lucide-react';
 

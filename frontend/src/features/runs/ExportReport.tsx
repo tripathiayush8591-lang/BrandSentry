@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { brandApi } from '../../services/brand-api';
+import { useBrandApi } from '../../services/useBrandApi';
 import { serializeReport } from './report';
+import { useDemoMode } from '../preview/demo-context';
 
 export function ExportReport({ runId }: { runId: string }) {
+  const brandApi = useBrandApi();
+  const demo = useDemoMode();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   async function download() {
@@ -20,7 +23,7 @@ export function ExportReport({ runId }: { runId: string }) {
     } finally { setBusy(false); }
   }
   return <div className="space-y-2">
-    <button className="neu-btn-secondary px-4 py-2" disabled={busy} onClick={() => void download()}>{busy ? 'Exporting report…' : 'Export validation/review JSON'}</button>
+    <button className="neu-btn-secondary px-4 py-2" disabled={busy || demo} onClick={() => void download()}>{demo ? 'Report export — Available in connected mode' : busy ? 'Exporting report…' : 'Export validation/review JSON'}</button>
     {error && <p role="alert" className="text-sm">{error}</p>}
   </div>;
 }

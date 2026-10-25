@@ -41,7 +41,7 @@ export function LoginPage() {
         {notice && <p className="auth-feedback" role="status">{notice}</p>}
         {error && <div className="auth-feedback auth-error" role="alert">{error}</div>}
         {status === 'unavailable' && <button className="auth-retry" onClick={() => { void restore(); }}>Retry session check</button>}
-        <p className="guest-description"><Link className="auth-retry" to="/preview">Explore read-only preview</Link><br />Synthetic examples only. No sign-in required.</p>
+        <p className="guest-description"><Link className="auth-button guest-button" to="/preview">Explore Guest Demo</Link><br />Synthetic examples only. No sign-in required.</p>
         <p className="guest-description" id="guest-description">Try a private demo. Your guest workspace is temporary and separate from your Google account.</p>
       </div>
       <p className="login-footnote"><Shield size={13} aria-hidden="true" /> Thoughtful checks. Human decisions.</p>
